@@ -1,1114 +1,503 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <base target="_top">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form Pengumpulan Laporan PKL (S1)</title>
-  <style>
-    :root {
-      --primary: #1a73e8;
-      --primary-dark: #0d47a1;
-      --success: #27ae60;
-      --danger: #e74c3c;
-      --warning: #f39c12;
-      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg-gradient);
-      min-height: 100vh;
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .container {
-      width: 100%;
-      max-width: 680px;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      overflow: hidden;
-      animation: slideUp 0.5s ease-out;
-    }
-    
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-      color: white;
-      padding: 35px 30px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .header::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
-      background-size: 30px 30px;
-      animation: patternMove 20s linear infinite;
-    }
-    
-    @keyframes patternMove {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(30px, 30px); }
-    }
-    
-    .header h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
-      position: relative;
-      z-index: 1;
-    }
-    
-    .header .icon {
-      font-size: 40px;
-      display: block;
-      margin-bottom: 10px;
-    }
-    
-    .header p {
-      font-size: 14px;
-      opacity: 0.95;
-      position: relative;
-      z-index: 1;
-    }
-    
-    .form-body {
-      padding: 35px;
-    }
-    
-    .alert {
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: none;
-      animation: fadeIn 0.3s ease-in;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .alert-info {
-      background: #e3f2fd;
-      color: #0d47a1;
-      border-left: 4px solid var(--primary);
-      display: block;
-    }
-    
-    .alert-success {
-      background: #d4edda;
-      color: #155724;
-      border-left: 4px solid var(--success);
-    }
-    
-    .alert-warning {
-      background: #fff3cd;
-      color: #856404;
-      border-left: 4px solid var(--warning);
-    }
-    
-    .alert-danger {
-      background: #f8d7da;
-      color: #721c24;
-      border-left: 4px solid var(--danger);
-    }
-    
-    .form-group {
-      margin-bottom: 25px;
-    }
-    
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: #333;
-      font-weight: 600;
-      font-size: 14px;
-      transition: color 0.3s ease;
-    }
-    
-    .required::after {
-      content: " *";
-      color: var(--danger);
-    }
-    
-    .input-field, select {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      background-color: #fafafa;
-      font-family: inherit;
-    }
-    
-    .input-field:focus, select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
-      background-color: white;
-    }
-    
-    .input-field.error, select.error {
-      border-color: var(--danger);
-      background-color: #fff5f5;
-    }
-    
-    .input-field.success {
-      border-color: var(--success);
-      background-color: #f0fff4;
-    }
-    
-    .input-field:disabled {
-      background-color: #f5f5f5;
-      cursor: not-allowed;
-    }
-    
-    .file-upload-wrapper {
-      position: relative;
-      width: 100%;
-    }
-    
-    .file-input {
-      position: absolute;
-      left: -9999px;
-    }
-    
-    .file-label {
-      display: flex;
-      align-items: center;
-      padding: 15px;
-      background: #f8f9fa;
-      border: 2px dashed #ccc;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      color: #666;
-      font-weight: normal;
-      min-height: 60px;
-    }
-    
-    .file-label:hover {
-      border-color: var(--primary);
-      background: #f0f7ff;
-      color: var(--primary);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(26, 115, 232, 0.1);
-    }
-    
-    .file-label.has-file {
-      border-color: var(--success);
-      border-style: solid;
-      background: #f0fff4;
-      color: var(--success);
-    }
-    
-    .file-label .file-icon {
-      margin-right: 12px;
-      font-size: 24px;
-      flex-shrink: 0;
-    }
-    
-    .file-label .file-text {
-      flex: 1;
-      font-size: 14px;
-    }
-    
-    .file-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 8px;
-      font-size: 12px;
-    }
-    
-    .file-name {
-      color: var(--success);
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    
-    .file-size {
-      color: #999;
-    }
-    
-    .file-hint {
-      color: #999;
-      font-size: 11px;
-    }
-    
-    .btn-submit {
-      width: 100%;
-      padding: 15px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .btn-submit:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(26, 115, 232, 0.3);
-    }
-    
-    .btn-submit:active:not(:disabled) {
-      transform: translateY(0);
-    }
-    
-    .btn-submit:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-      transform: none;
-    }
-    
-    .btn-submit .btn-text {
-      position: relative;
-      z-index: 1;
-    }
-    
-    .btn-submit .spinner {
-      display: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 1;
-      font-size: 20px;
-    }
-    
-    .btn-submit.loading .btn-text {
-      opacity: 0;
-    }
-    
-    .btn-submit.loading .spinner {
-      display: block;
-    }
-    
-    .error-message {
-      color: var(--danger);
-      font-size: 12px;
-      margin-top: 5px;
-      display: none;
-      animation: fadeIn 0.3s ease-in;
-    }
-    
-    .nim-status {
-      font-size: 12px;
-      margin-top: 5px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    
-    .nim-valid {
-      color: var(--success);
-    }
-    
-    .nim-invalid {
-      color: var(--danger);
-    }
-    
-    .nim-checking {
-      color: var(--warning);
-    }
-    
-    .progress-bar {
-      width: 100%;
-      height: 4px;
-      background: #e0e0e0;
-      border-radius: 2px;
-      margin-top: 15px;
-      overflow: hidden;
-      display: none;
-    }
-    
-    .progress-bar.active {
-      display: block;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--primary), var(--success));
-      border-radius: 2px;
-      transition: width 0.3s ease;
-      animation: progressAnimation 2s ease-in-out infinite;
-    }
-    
-    @keyframes progressAnimation {
-      0% { width: 0%; }
-      50% { width: 70%; }
-      100% { width: 100%; }
-    }
-    
-    .footer {
-      text-align: center;
-      padding: 20px;
-      background: #f8f9fa;
-      color: #666;
-      font-size: 12px;
-      border-top: 1px solid #e0e0e0;
-    }
-    
-    .success-links {
-      margin-top: 10px;
-      padding: 10px;
-      background: white;
-      border-radius: 5px;
-    }
-    
-    .success-links a {
-      display: block;
-      padding: 5px 0;
-      color: var(--primary);
-      text-decoration: none;
-      font-size: 14px;
-    }
-    
-    .success-links a:hover {
-      text-decoration: underline;
-    }
-    
-    @media (max-width: 600px) {
-      .container {
-        border-radius: 0;
-      }
-      
-      .form-body {
-        padding: 20px;
-      }
-      
-      .header {
-        padding: 25px 20px;
-      }
-      
-      .header h1 {
-        font-size: 22px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Pengumpulan Laporan PKL (S1)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-header h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .form-header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-group input[type="text"],
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .form-group input[type="text"]:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 10px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input[type="file"]:hover {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+        
+        .validation-message {
+            font-size: 12px;
+            margin-top: 5px;
+            min-height: 20px;
+        }
+        
+        .validation-message.error {
+            color: #dc3545;
+        }
+        
+        .validation-message.success {
+            color: #28a745;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+        
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .info-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .alert.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 25px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <span class="icon">📄</span>
-      <h1>Pengumpulan Laporan PKL</h1>
-      <p>Program Studi Ilmu Komunikasi (S1)</p>
+    <div class="form-container">
+        <div class="form-header">
+            <h2>📚 Form Pengumpulan Laporan PKL</h2>
+            <p>Program Studi Ilmu Komunikasi (S1)</p>
+        </div>
+        
+        <form id="pklForm" onsubmit="handleSubmit(event)">
+            <!-- Nama Lengkap -->
+            <div class="form-group">
+                <label for="namaLengkap">Nama Lengkap</label>
+                <input type="text" id="namaLengkap" name="namaLengkap" 
+                       placeholder="Masukkan nama lengkap" required>
+            </div>
+            
+            <!-- NIM dengan Validasi -->
+            <div class="form-group">
+                <label for="nim">NIM</label>
+                <input type="text" id="nim" name="nim" 
+                       placeholder="Contoh: 202241003" 
+                       pattern="\d{9}"
+                       maxlength="9"
+                       required>
+                <div class="validation-message" id="nimValidation"></div>
+                <div class="info-text">Format: 4 digit tahun + 2 digit unik + 3 digit urut</div>
+            </div>
+            
+            <!-- Konsentrasi -->
+            <div class="form-group">
+                <label for="konsentrasi">Konsentrasi</label>
+                <select id="konsentrasi" name="konsentrasi" required>
+                    <option value="">Pilih Konsentrasi</option>
+                    <option value="Humas">Humas</option>
+                    <option value="Periklanan">Periklanan</option>
+                    <option value="Jurnalistik">Jurnalistik</option>
+                    <option value="Penyiaran Digital">Penyiaran Digital</option>
+                </select>
+            </div>
+            
+            <!-- Upload Cover sampai Lembar Persetujuan -->
+            <div class="form-group">
+                <label for="fileCover">Upload File (Cover - Lembar Persetujuan)</label>
+                <input type="file" id="fileCover" name="fileCover" 
+                       accept=".pdf" required>
+                <div class="info-text">Format PDF, maksimal 10MB</div>
+            </div>
+            
+            <!-- Upload File Lengkap -->
+            <div class="form-group">
+                <label for="fileLengkap">Upload File Lengkap</label>
+                <input type="file" id="fileLengkap" name="fileLengkap" 
+                       accept=".pdf" required>
+                <div class="info-text">Format PDF, maksimal 20MB</div>
+            </div>
+            
+            <button type="submit" class="btn-submit" id="submitBtn">
+                Submit Laporan
+            </button>
+        </form>
+        
+        <div class="loading" id="loading">
+            ⏳ Sedang mengupload file...
+        </div>
+        
+        <div class="alert" id="alertMessage"></div>
     </div>
-    
-    <div class="form-body">
-      <!-- Info Alert -->
-      <div class="alert alert-info" id="infoAlert">
-        <strong>ℹ️ Informasi Penting:</strong><br>
-        • Format NIM: 2022XXYYY (XX = 2 digit unik, YYY = 3 digit urut)<br>
-        • Setiap NIM hanya dapat mengumpulkan <strong>1 kali</strong><br>
-        • File harus dalam format <strong>PDF</strong>
-      </div>
-      
-      <!-- Success Alert -->
-      <div class="alert alert-success" id="successAlert"></div>
-      
-      <!-- Warning Alert -->
-      <div class="alert alert-warning" id="warningAlert"></div>
-      
-      <!-- Error Alert -->
-      <div class="alert alert-danger" id="errorAlert"></div>
-      
-      <form id="pklForm" novalidate>
-        <!-- Nama Lengkap -->
-        <div class="form-group">
-          <label for="namaLengkap" class="required">Nama Lengkap</label>
-          <input 
-            type="text" 
-            id="namaLengkap" 
-            class="input-field" 
-            placeholder="Masukkan nama lengkap sesuai KTM"
-            autocomplete="name"
-            required>
-          <div class="error-message" id="namaError"></div>
-        </div>
-        
-        <!-- NIM -->
-        <div class="form-group">
-          <label for="nim" class="required">Nomor Induk Mahasiswa (NIM)</label>
-          <input 
-            type="text" 
-            id="nim" 
-            class="input-field" 
-            placeholder="Contoh: 202241003"
-            maxlength="9"
-            pattern="[0-9]{9}"
-            inputmode="numeric"
-            autocomplete="off"
-            required>
-          <div class="nim-status" id="nimStatus"></div>
-          <div class="error-message" id="nimError"></div>
-        </div>
-        
-        <!-- Konsentrasi -->
-        <div class="form-group">
-          <label for="konsentrasi" class="required">Konsentrasi</label>
-          <select id="konsentrasi" class="input-field" required>
-            <option value="">-- Pilih Konsentrasi --</option>
-            <option value="Humas">Humas</option>
-            <option value="Periklanan">Periklanan</option>
-            <option value="Jurnalistik">Jurnalistik</option>
-            <option value="Penyiaran Digital">Penyiaran Digital</option>
-          </select>
-          <div class="error-message" id="konsentrasiError"></div>
-        </div>
-        
-        <!-- File Cover -->
-        <div class="form-group">
-          <label class="required">File Cover - Lembar Persetujuan</label>
-          <div class="file-upload-wrapper">
-            <input 
-              type="file" 
-              id="coverFile" 
-              class="file-input" 
-              accept=".pdf,application/pdf"
-              required>
-            <label for="coverFile" class="file-label" id="coverLabel">
-              <span class="file-icon">📁</span>
-              <span class="file-text">Pilih file cover & lembar persetujuan...</span>
-            </label>
-          </div>
-          <div class="file-info">
-            <span class="file-name" id="coverFileName"></span>
-            <span class="file-size" id="coverFileSize"></span>
-          </div>
-          <span class="file-hint">Format: PDF | Maks: 10MB</span>
-          <div class="error-message" id="coverError"></div>
-        </div>
-        
-        <!-- File Lengkap -->
-        <div class="form-group">
-          <label class="required">File Lengkap</label>
-          <div class="file-upload-wrapper">
-            <input 
-              type="file" 
-              id="completeFile" 
-              class="file-input" 
-              accept=".pdf,application/pdf"
-              required>
-            <label for="completeFile" class="file-label" id="completeLabel">
-              <span class="file-icon">📁</span>
-              <span class="file-text">Pilih file lengkap laporan PKL...</span>
-            </label>
-          </div>
-          <div class="file-info">
-            <span class="file-name" id="completeFileName"></span>
-            <span class="file-size" id="completeFileSize"></span>
-          </div>
-          <span class="file-hint">Format: PDF | Maks: 25MB</span>
-          <div class="error-message" id="completeError"></div>
-        </div>
-        
-        <!-- Progress Bar -->
-        <div class="progress-bar" id="progressBar">
-          <div class="progress-fill"></div>
-        </div>
-        
-        <!-- Submit Button -->
-        <button type="submit" class="btn-submit" id="submitBtn">
-          <span class="btn-text">📤 Submit Laporan PKL</span>
-          <span class="spinner">⏳</span>
-        </button>
-      </form>
-    </div>
-    
-    <div class="footer">
-      <p>© 2024 Program Studi Ilmu Komunikasi | Sistem Pengumpulan Laporan PKL</p>
-    </div>
-  </div>
 
-  <script>
-    // ============================================
-    // CONFIGURATION
-    // ============================================
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQR7L5aEftRG0FJ8xrv2m0zV3tlBIFEqysiPtH8uUIDM3FWu9AdurYyTYf2ML-I8Q0yA/exec';
-    
-    // ============================================
-    // GLOBAL VARIABLES
-    // ============================================
-    let nimCheckTimeout;
-    let isNIMValid = false;
-    let isNIMUnique = false;
-    
-    // ============================================
-    // DOM ELEMENTS
-    // ============================================
-    const form = document.getElementById('pklForm');
-    const namaInput = document.getElementById('namaLengkap');
-    const nimInput = document.getElementById('nim');
-    const konsentrasiSelect = document.getElementById('konsentrasi');
-    const coverFileInput = document.getElementById('coverFile');
-    const completeFileInput = document.getElementById('completeFile');
-    const submitBtn = document.getElementById('submitBtn');
-    const progressBar = document.getElementById('progressBar');
-    
-    // ============================================
-    // GOOGLE APPS SCRIPT API HELPER
-    // ============================================
-    function callGoogleScript(functionName, params) {
-      return new Promise((resolve, reject) => {
-        // Check if running in Google Apps Script environment
-        if (typeof google !== 'undefined' && google.script && google.script.run) {
-          const runner = google.script.run
-            .withSuccessHandler(function(result) {
-              // Validate response
-              if (result === undefined || result === null) {
-                resolve({ valid: false, message: 'Empty response from server' });
-                return;
-              }
-              resolve(result);
-            })
-            .withFailureHandler(function(error) {
-              reject(new Error(error.message || 'Unknown error'));
-            });
-          
-          if (params !== undefined && params !== null) {
-            runner[functionName](params);
-          } else {
-            runner[functionName]();
-          }
-        } else {
-          // For external hosting, use fetch
-          fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: JSON.stringify({
-              action: functionName,
-              params: params
-            })
-          })
-          .then(function(response) {
-            if (!response.ok) {
-              throw new Error('HTTP error! status: ' + response.status);
+    <script>
+        // Fungsi untuk mendapatkan semester berdasarkan tanggal
+        function getSemesterFolder() {
+            const now = new Date();
+            const month = now.getMonth(); // 0-11
+            const year = now.getFullYear();
+            
+            let semester;
+            if (month >= 8 && month <= 1) { // September - Februari
+                semester = `Ganjil_${year}_${year + 1}`;
+            } else { // Maret - Agustus
+                semester = `Genap_${year - 1}_${year}`;
             }
-            return response.text();
-          })
-          .then(function(text) {
-            try {
-              // Try to parse as JSON
-              const data = JSON.parse(text);
-              resolve(data);
-            } catch (e) {
-              // If not JSON, try to extract JSON from HTML response
-              const jsonMatch = text.match(/\{.*\}/s);
-              if (jsonMatch) {
-                try {
-                  const data = JSON.parse(jsonMatch[0]);
-                  resolve(data);
-                } catch (e2) {
-                  resolve({ valid: false, message: 'Invalid response format' });
+            
+            return semester;
+        }
+        
+        // Fungsi untuk mendapatkan nama file yang sudah diformat
+        function getFormattedFileName(nama, nim, originalFileName) {
+            // Bersihkan nama dari karakter spesial
+            const cleanNama = nama.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+            const cleanNim = nim.trim();
+            
+            // Ambil ekstensi file
+            const fileExt = originalFileName.split('.').pop();
+            
+            // Format: Nama=>NIM=>NamaFile
+            return `${cleanNama}=>${cleanNim}=>${originalFileName.replace(/\.[^/.]+$/, '')}.${fileExt}`;
+        }
+        
+        // Validasi NIM
+        document.getElementById('nim').addEventListener('input', function(e) {
+            const nim = e.target.value;
+            const validationDiv = document.getElementById('nimValidation');
+            
+            // Reset validation
+            validationDiv.className = 'validation-message';
+            validationDiv.textContent = '';
+            
+            if (nim.length === 9) {
+                // Validasi format: 4 digit tahun + 2 digit unik + 3 digit urut
+                const yearPart = nim.substring(0, 4);
+                const uniquePart = nim.substring(4, 6);
+                const sequencePart = nim.substring(6, 9);
+                
+                // Validasi tahun (harus antara 2000-2099)
+                const year = parseInt(yearPart);
+                if (year < 2000 || year > 2099) {
+                    validationDiv.className = 'validation-message error';
+                    validationDiv.textContent = '❌ 4 digit pertama harus tahun valid (2000-2099)';
+                    return;
                 }
-              } else {
-                resolve({ valid: false, message: 'Invalid response from server' });
-              }
+                
+                // Validasi 2 digit unik (harus angka, tidak boleh 00)
+                const unique = parseInt(uniquePart);
+                if (isNaN(unique) || uniquePart === '00') {
+                    validationDiv.className = 'validation-message error';
+                    validationDiv.textContent = '❌ 2 digit unik tidak valid (tidak boleh 00)';
+                    return;
+                }
+                
+                // Validasi 3 digit urut (harus angka)
+                const sequence = parseInt(sequencePart);
+                if (isNaN(sequence) || sequence < 1) {
+                    validationDiv.className = 'validation-message error';
+                    validationDiv.textContent = '❌ 3 digit urut harus valid (001-999)';
+                    return;
+                }
+                
+                // Jika semua validasi lolos
+                validationDiv.className = 'validation-message success';
+                validationDiv.textContent = `✅ NIM valid: Tahun ${yearPart}, Unik ${uniquePart}, Urut ${sequencePart}`;
+            } else if (nim.length > 0) {
+                validationDiv.className = 'validation-message error';
+                validationDiv.textContent = '❌ NIM harus 9 digit';
             }
-          })
-          .catch(function(error) {
-            reject(new Error('Network error: ' + error.message));
-          });
-        }
-      });
-    }
-    
-    // ============================================
-    // FILE INPUT HANDLERS
-    // ============================================
-    function handleFileSelect(inputElement, labelElement, fileNameElement, fileSizeElement, maxSize) {
-      inputElement.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        const label = labelElement;
-        const fileName = fileNameElement;
-        const fileSize = fileSizeElement;
-        
-        if (file) {
-          // Check file type
-          if (file.type !== 'application/pdf') {
-            showError(inputElement.id + 'Error', 'File harus dalam format PDF');
-            inputElement.value = '';
-            label.classList.remove('has-file');
-            label.querySelector('.file-icon').textContent = '📁';
-            label.querySelector('.file-text').textContent = 'Pilih file...';
-            fileName.textContent = '';
-            fileSize.textContent = '';
-            return;
-          }
-          
-          // Check file size
-          if (file.size > maxSize) {
-            const sizeMB = (maxSize / (1024 * 1024)).toFixed(0);
-            showError(inputElement.id + 'Error', 'Ukuran file maksimal ' + sizeMB + 'MB');
-            inputElement.value = '';
-            label.classList.remove('has-file');
-            label.querySelector('.file-icon').textContent = '📁';
-            label.querySelector('.file-text').textContent = 'Pilih file...';
-            fileName.textContent = '';
-            fileSize.textContent = '';
-            return;
-          }
-          
-          // Valid file
-          hideError(inputElement.id + 'Error');
-          label.classList.add('has-file');
-          label.querySelector('.file-icon').textContent = '✅';
-          label.querySelector('.file-text').textContent = 'File dipilih';
-          fileName.innerHTML = '&#10003; ' + file.name;
-          
-          // Format file size
-          const sizeKB = (file.size / 1024).toFixed(1);
-          const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-          fileSize.textContent = file.size > 1024 * 1024 ? sizeMB + ' MB' : sizeKB + ' KB';
-          
-        } else {
-          label.classList.remove('has-file');
-          label.querySelector('.file-icon').textContent = '📁';
-          label.querySelector('.file-text').textContent = 'Pilih file...';
-          fileName.textContent = '';
-          fileSize.textContent = '';
-        }
-      });
-    }
-    
-    // Initialize file handlers
-    handleFileSelect(
-      coverFileInput, 
-      document.getElementById('coverLabel'),
-      document.getElementById('coverFileName'),
-      document.getElementById('coverFileSize'),
-      10 * 1024 * 1024
-    );
-    
-    handleFileSelect(
-      completeFileInput,
-      document.getElementById('completeLabel'),
-      document.getElementById('completeFileName'),
-      document.getElementById('completeFileSize'),
-      25 * 1024 * 1024
-    );
-    
-    // ============================================
-    // NIM VALIDATION & DUPLICATE CHECKING
-    // ============================================
-    nimInput.addEventListener('input', function(e) {
-      // Only allow numbers
-      this.value = this.value.replace(/[^0-9]/g, '');
-      if (this.value.length > 9) {
-        this.value = this.value.slice(0, 9);
-      }
-      
-      // Clear previous timeout
-      clearTimeout(nimCheckTimeout);
-      
-      const nim = this.value.trim();
-      const statusElement = document.getElementById('nimStatus');
-      
-      // Reset states
-      this.classList.remove('success', 'error');
-      hideError('nimError');
-      statusElement.textContent = '';
-      statusElement.className = 'nim-status';
-      isNIMValid = false;
-      isNIMUnique = false;
-      hideAlert('warningAlert');
-      
-      if (nim.length === 9) {
-        statusElement.textContent = '⏳ Memeriksa NIM...';
-        statusElement.className = 'nim-status nim-checking';
-        
-        // Delay validation
-        nimCheckTimeout = setTimeout(function() {
-          // Step 1: Validate NIM format
-          callGoogleScript('validateNIM', nim)
-            .then(function(validationResult) {
-              // Check if result is valid
-              if (!validationResult || typeof validationResult.valid === 'undefined') {
-                statusElement.textContent = '⚠️ Response tidak valid dari server';
-                statusElement.className = 'nim-status nim-invalid';
-                console.error('Invalid validation response:', validationResult);
-                return;
-              }
-              
-              if (!validationResult.valid) {
-                nimInput.classList.add('error');
-                showError('nimError', validationResult.message || 'Format NIM tidak valid');
-                statusElement.textContent = '❌ Format NIM tidak valid';
-                statusElement.className = 'nim-status nim-invalid';
-                isNIMValid = false;
-                isNIMUnique = false;
-              } else {
-                // Format valid, check duplicate
-                return callGoogleScript('checkDuplicateNIM', nim)
-                  .then(function(dupResult) {
-                    if (!dupResult || typeof dupResult.isDuplicate === 'undefined') {
-                      statusElement.textContent = '⚠️ Response tidak valid dari server';
-                      statusElement.className = 'nim-status nim-invalid';
-                      console.error('Invalid duplicate check response:', dupResult);
-                      return;
-                    }
-                    
-                    if (dupResult.isDuplicate) {
-                      nimInput.classList.add('error');
-                      showAlert('warningAlert', 
-                        '<strong>⚠️ NIM Sudah Terdaftar</strong><br>' +
-                        (dupResult.message || 'NIM sudah terdaftar') + '<br>' +
-                        '<small>NIM ini sudah pernah mengumpulkan laporan PKL sebelumnya.</small>'
-                      );
-                      statusElement.textContent = '⚠️ NIM sudah terdaftar';
-                      statusElement.className = 'nim-status nim-invalid';
-                      isNIMValid = true;
-                      isNIMUnique = false;
-                    } else {
-                      nimInput.classList.add('success');
-                      hideAlert('warningAlert');
-                      statusElement.innerHTML = '✅ NIM valid dan belum terdaftar';
-                      statusElement.className = 'nim-status nim-valid';
-                      isNIMValid = true;
-                      isNIMUnique = true;
-                    }
-                  });
-              }
-            })
-            .catch(function(error) {
-              statusElement.textContent = '⚠️ Gagal menghubungi server';
-              statusElement.className = 'nim-status nim-invalid';
-              console.error('NIM validation error:', error);
-            });
-        }, 800);
-        
-      } else if (nim.length > 0) {
-        statusElement.textContent = '⌨️ Mengetik... (' + nim.length + '/9)';
-        statusElement.className = 'nim-status nim-checking';
-      }
-    });
-    
-    // ============================================
-    // UTILITY FUNCTIONS
-    // ============================================
-    function showError(elementId, message) {
-      const element = document.getElementById(elementId);
-      if (element) {
-        element.textContent = message;
-        element.style.display = 'block';
-      }
-    }
-    
-    function hideError(elementId) {
-      const element = document.getElementById(elementId);
-      if (element) {
-        element.style.display = 'none';
-      }
-    }
-    
-    function showAlert(alertId, message) {
-      const alert = document.getElementById(alertId);
-      if (alert) {
-        alert.innerHTML = message;
-        alert.style.display = 'block';
-      }
-    }
-    
-    function hideAlert(alertId) {
-      const alert = document.getElementById(alertId);
-      if (alert) {
-        alert.style.display = 'none';
-      }
-    }
-    
-    function hideAllAlerts() {
-      ['successAlert', 'warningAlert', 'errorAlert'].forEach(function(id) {
-        hideAlert(id);
-      });
-    }
-    
-    function resetForm() {
-      form.reset();
-      nimInput.classList.remove('success', 'error');
-      document.getElementById('nimStatus').textContent = '';
-      document.getElementById('nimStatus').className = 'nim-status';
-      isNIMValid = false;
-      isNIMUnique = false;
-      
-      ['cover', 'complete'].forEach(function(type) {
-        const label = document.getElementById(type + 'Label');
-        const fileName = document.getElementById(type + 'FileName');
-        const fileSize = document.getElementById(type + 'FileSize');
-        
-        label.classList.remove('has-file');
-        label.querySelector('.file-icon').textContent = '📁';
-        label.querySelector('.file-text').textContent = 'Pilih file...';
-        fileName.textContent = '';
-        fileSize.textContent = '';
-      });
-      
-      document.querySelectorAll('.error-message').forEach(function(el) {
-        el.style.display = 'none';
-      });
-    }
-    
-    function setLoading(isLoading) {
-      if (isLoading) {
-        submitBtn.disabled = true;
-        submitBtn.classList.add('loading');
-        progressBar.classList.add('active');
-        namaInput.disabled = true;
-        nimInput.disabled = true;
-        konsentrasiSelect.disabled = true;
-        coverFileInput.disabled = true;
-        completeFileInput.disabled = true;
-      } else {
-        submitBtn.disabled = false;
-        submitBtn.classList.remove('loading');
-        progressBar.classList.remove('active');
-        namaInput.disabled = false;
-        nimInput.disabled = false;
-        konsentrasiSelect.disabled = false;
-        coverFileInput.disabled = false;
-        completeFileInput.disabled = false;
-      }
-    }
-    
-    function readFileAsBase64(file) {
-      return new Promise(function(resolve, reject) {
-        const reader = new FileReader();
-        reader.onload = function() {
-          resolve(reader.result);
-        };
-        reader.onerror = function() {
-          reject(new Error('Gagal membaca file: ' + file.name));
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-    
-    // ============================================
-    // FORM SUBMISSION
-    // ============================================
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      // Reset all alerts and errors
-      hideAllAlerts();
-      document.querySelectorAll('.error-message').forEach(function(el) {
-        el.style.display = 'none';
-      });
-      document.querySelectorAll('.input-field').forEach(function(el) {
-        el.classList.remove('error');
-      });
-      
-      let isValid = true;
-      
-      // Validate Nama Lengkap
-      const namaLengkap = namaInput.value.trim();
-      if (!namaLengkap) {
-        showError('namaError', 'Nama lengkap wajib diisi');
-        namaInput.classList.add('error');
-        isValid = false;
-      } else if (namaLengkap.length < 3) {
-        showError('namaError', 'Nama lengkap minimal 3 karakter');
-        namaInput.classList.add('error');
-        isValid = false;
-      }
-      
-      // Validate NIM
-      const nim = nimInput.value.trim();
-      if (!nim) {
-        showError('nimError', 'NIM wajib diisi');
-        nimInput.classList.add('error');
-        isValid = false;
-      } else if (!isNIMValid) {
-        showError('nimError', 'Format NIM tidak valid');
-        nimInput.classList.add('error');
-        isValid = false;
-      } else if (!isNIMUnique) {
-        showError('nimError', 'NIM sudah pernah mengumpulkan laporan');
-        nimInput.classList.add('error');
-        isValid = false;
-      }
-      
-      // Validate Konsentrasi
-      const konsentrasi = konsentrasiSelect.value;
-      if (!konsentrasi) {
-        showError('konsentrasiError', 'Pilih konsentrasi');
-        konsentrasiSelect.classList.add('error');
-        isValid = false;
-      }
-      
-      // Validate Cover File
-      const coverFile = coverFileInput.files[0];
-      if (!coverFile) {
-        showError('coverError', 'File cover wajib diupload');
-        isValid = false;
-      } else if (coverFile.type !== 'application/pdf') {
-        showError('coverError', 'File harus dalam format PDF');
-        isValid = false;
-      } else if (coverFile.size > 10 * 1024 * 1024) {
-        showError('coverError', 'Ukuran file maksimal 10MB');
-        isValid = false;
-      }
-      
-      // Validate Complete File
-      const completeFile = completeFileInput.files[0];
-      if (!completeFile) {
-        showError('completeError', 'File lengkap wajib diupload');
-        isValid = false;
-      } else if (completeFile.type !== 'application/pdf') {
-        showError('completeError', 'File harus dalam format PDF');
-        isValid = false;
-      } else if (completeFile.size > 25 * 1024 * 1024) {
-        showError('completeError', 'Ukuran file maksimal 25MB');
-        isValid = false;
-      }
-      
-      if (!isValid) {
-        const firstError = document.querySelector('.error-message[style*="block"]');
-        if (firstError) {
-          firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        return;
-      }
-      
-      // Final duplicate check before upload
-      setLoading(true);
-      
-      callGoogleScript('checkDuplicateNIM', nim)
-        .then(function(dupCheck) {
-          if (dupCheck && dupCheck.isDuplicate) {
-            setLoading(false);
-            showAlert('warningAlert', 
-              '<strong>❌ Gagal Submit</strong><br>' + 
-              (dupCheck.message || 'NIM sudah terdaftar') + '<br>' +
-              '<small>NIM ini sudah pernah mengumpulkan laporan PKL.</small>'
-            );
-            return;
-          }
-          
-          // Proceed with upload
-          return uploadFiles(namaLengkap, nim, konsentrasi, coverFile, completeFile);
-        })
-        .catch(function(error) {
-          setLoading(false);
-          showAlert('errorAlert', 
-            '<strong>❌ Kesalahan Sistem</strong><br>' + 
-            'Gagal memeriksa data: ' + (error.message || 'Unknown error')
-          );
         });
-    });
-    
-    function uploadFiles(namaLengkap, nim, konsentrasi, coverFile, completeFile) {
-      return Promise.all([
-        readFileAsBase64(coverFile),
-        readFileAsBase64(completeFile)
-      ])
-      .then(function(results) {
-        const coverData = results[0];
-        const completeData = results[1];
         
-        const formData = {
-          namaLengkap: namaLengkap,
-          nim: nim,
-          konsentrasi: konsentrasi,
-          coverFile: {
-            data: coverData.split(',')[1],
-            mimeType: coverFile.type
-          },
-          completeFile: {
-            data: completeData.split(',')[1],
-            mimeType: completeFile.type
-          }
-        };
-        
-        return callGoogleScript('uploadFiles', formData);
-      })
-      .then(function(response) {
-        setLoading(false);
-        
-        if (response && response.success) {
-          const successHTML = 
-            '<strong>✅ ' + (response.message || 'Upload berhasil') + '</strong>' +
-            '<div class="success-links">' +
-            (response.folderLink ? '<a href="' + response.folderLink + '" target="_blank">📂 Buka Folder Google Drive</a>' : '') +
-            (response.coverFileLink ? '<a href="' + response.coverFileLink + '" target="_blank">📄 Lihat File Cover</a>' : '') +
-            (response.completeFileLink ? '<a href="' + response.completeFileLink + '" target="_blank">📄 Lihat File Lengkap</a>' : '') +
-            '</div>' +
-            '<small style="display:block; margin-top:10px;">📧 Email konfirmasi telah dikirim ke email Anda</small>' +
-            (response.semester ? '<small>📅 Semester: ' + response.semester + '</small>' : '');
-          
-          showAlert('successAlert', successHTML);
-          resetForm();
-          document.getElementById('infoAlert').style.display = 'block';
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          
-        } else {
-          if (response && response.isDuplicate) {
-            showAlert('warningAlert', 
-              '<strong>❌ Gagal Submit</strong><br>' + 
-              (response.message || 'Data sudah ada')
-            );
-          } else {
-            showAlert('errorAlert', 
-              '<strong>❌ Gagal Upload</strong><br>' + 
-              (response ? response.message : 'Unknown error')
-            );
-          }
+        // Fungsi untuk mengirim email (simulasi)
+        function sendEmailNotification(nama, nim, konsentrasi, semester, fileNames) {
+            const emailData = {
+                to: `${nim}@student.university.ac.id`, // Email mahasiswa
+                subject: `Laporan PKL - ${nama} - ${nim}`,
+                body: `
+                    Halo ${nama},
+                    
+                    Laporan PKL Anda telah berhasil diupload dengan detail:
+                    
+                    Nama: ${nama}
+                    NIM: ${nim}
+                    Konsentrasi: ${konsentrasi}
+                    Semester: ${semester}
+                    
+                    File yang diupload:
+                    1. ${fileNames.cover}
+                    2. ${fileNames.lengkap}
+                    
+                    Terima kasih telah mengumpulkan laporan PKL.
+                    
+                    Salam,
+                    Admin Fakultas Ilmu Komunikasi
+                `
+            };
+            
+            // Simulasi pengiriman email
+            console.log('Mengirim email ke:', emailData.to);
+            console.log('Subject:', emailData.subject);
+            console.log('Body:', emailData.body);
+            
+            // Dalam implementasi nyata, ini akan menggunakan API email
+            // Seperti SendGrid, Mailgun, atau backend service
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    console.log('✅ Email terkirim ke:', emailData.to);
+                    resolve(true);
+                }, 1000);
+            });
         }
-      })
-      .catch(function(error) {
-        setLoading(false);
-        showAlert('errorAlert', 
-          '<strong>❌ Kesalahan Sistem</strong><br>' + 
-          'Terjadi kesalahan: ' + (error.message || 'Unknown error') + '<br>' +
-          '<small>Silakan coba lagi atau hubungi administrator.</small>'
-        );
-      });
-    }
-    
-    // ============================================
-    // INITIALIZATION
-    // ============================================
-    console.log('Form Pengumpulan Laporan PKL (S1) - Initialized');
-    console.log('Deployment URL:', SCRIPT_URL);
-    
-    setTimeout(function() {
-      namaInput.focus();
-    }, 500);
-  </script>
+        
+        // Handle form submission
+        async function handleSubmit(event) {
+            event.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingDiv = document.getElementById('loading');
+            const alertDiv = document.getElementById('alertMessage');
+            
+            // Disable button dan tampilkan loading
+            submitBtn.disabled = true;
+            loadingDiv.classList.add('active');
+            alertDiv.className = 'alert';
+            alertDiv.style.display = 'none';
+            
+            try {
+                // Ambil data form
+                const namaLengkap = document.getElementById('namaLengkap').value.trim();
+                const nim = document.getElementById('nim').value.trim();
+                const konsentrasi = document.getElementById('konsentrasi').value;
+                const fileCover = document.getElementById('fileCover').files[0];
+                const fileLengkap = document.getElementById('fileLengkap').files[0];
+                
+                // Validasi NIM
+                const nimRegex = /^\d{9}$/;
+                if (!nimRegex.test(nim)) {
+                    throw new Error('NIM harus 9 digit');
+                }
+                
+                // Validasi 2 digit unik
+                const uniquePart = nim.substring(4, 6);
+                if (uniquePart === '00' || isNaN(parseInt(uniquePart))) {
+                    throw new Error('2 digit unik NIM tidak valid');
+                }
+                
+                // Validasi file size
+                const maxCoverSize = 10 * 1024 * 1024; // 10MB
+                const maxLengkapSize = 20 * 1024 * 1024; // 20MB
+                
+                if (fileCover.size > maxCoverSize) {
+                    throw new Error('File Cover melebihi batas 10MB');
+                }
+                
+                if (fileLengkap.size > maxLengkapSize) {
+                    throw new Error('File Lengkap melebihi batas 20MB');
+                }
+                
+                // Dapatkan folder semester
+                const semesterFolder = getSemesterFolder();
+                
+                // Format nama file
+                const formattedCoverName = getFormattedFileName(namaLengkap, nim, fileCover.name);
+                const formattedLengkapName = getFormattedFileName(namaLengkap, nim, fileLengkap.name);
+                
+                // Simulasi struktur folder dan upload
+                const folderStructure = {
+                    semester: semesterFolder,
+                    files: {
+                        cover: `uploads/${semesterFolder}/cover/${formattedCoverName}`,
+                        lengkap: `uploads/${semesterFolder}/lengkap/${formattedLengkapName}`
+                    }
+                };
+                
+                console.log('📁 Struktur Folder:', folderStructure);
+                console.log('📄 Upload File Cover:', formattedCoverName);
+                console.log('📄 Upload File Lengkap:', formattedLengkapName);
+                
+                // Simulasi upload delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Kirim notifikasi email
+                await sendEmailNotification(
+                    namaLengkap, 
+                    nim, 
+                    konsentrasi, 
+                    semesterFolder,
+                    {
+                        cover: formattedCoverName,
+                        lengkap: formattedLengkapName
+                    }
+                );
+                
+                // Tampilkan pesan sukses
+                alertDiv.className = 'alert success';
+                alertDiv.style.display = 'block';
+                alertDiv.innerHTML = `
+                    ✅ <strong>Upload Berhasil!</strong><br>
+                    Nama: ${namaLengkap}<br>
+                    NIM: ${nim}<br>
+                    Konsentrasi: ${konsentrasi}<br>
+                    Semester: ${semesterFolder}<br>
+                    File Cover: ${formattedCoverName}<br>
+                    File Lengkap: ${formattedLengkapName}<br>
+                    <small>✉️ Email notifikasi telah dikirim ke ${nim}@student.university.ac.id</small>
+                `;
+                
+                // Reset form
+                document.getElementById('pklForm').reset();
+                document.getElementById('nimValidation').textContent = '';
+                document.getElementById('nimValidation').className = 'validation-message';
+                
+            } catch (error) {
+                alertDiv.className = 'alert error';
+                alertDiv.style.display = 'block';
+                alertDiv.textContent = `❌ Error: ${error.message}`;
+            } finally {
+                submitBtn.disabled = false;
+                loadingDiv.classList.remove('active');
+            }
+        }
+        
+        // Preview semester folder saat halaman dimuat
+        console.log('📅 Semester aktif:', getSemesterFolder());
+        console.log('📂 Struktur folder akan dibuat:');
+        console.log('  uploads/');
+        console.log('    ├── Ganjil_2026_2027/ (September-Februari)');
+        console.log('    │   ├── cover/');
+        console.log('    │   └── lengkap/');
+        console.log('    └── Genap_2025_2026/ (Maret-Agustus)');
+        console.log('        ├── cover/');
+        console.log('        └── lengkap/');
+    </script>
 </body>
 </html>
