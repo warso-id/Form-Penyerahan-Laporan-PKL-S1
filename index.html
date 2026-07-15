@@ -271,25 +271,36 @@
             <p>Fakultas Ilmu Komunikasi - Program Studi S1</p>
         </div>
         
-        <form id="pklForm" onsubmit="handleSubmit(event)">
+        <form id="pklForm" onsubmit="handleSubmit(event)" autocomplete="on">
             <!-- Nama Lengkap -->
             <div class="form-group">
                 <label for="namaLengkap">👤 Nama Lengkap</label>
-                <input type="text" id="namaLengkap" name="namaLengkap" 
-                       placeholder="Masukkan nama lengkap sesuai KTM" required>
+                <input type="text" 
+                       id="namaLengkap" 
+                       name="namaLengkap"
+                       autocomplete="name"
+                       placeholder="Masukkan nama lengkap sesuai KTM" 
+                       required>
             </div>
             
             <!-- Email -->
             <div class="form-group">
                 <label for="email">📧 Email Aktif</label>
-                <input type="email" id="email" name="email" 
-                       placeholder="contoh@email.com" required>
+                <input type="email" 
+                       id="email" 
+                       name="email"
+                       autocomplete="email"
+                       placeholder="contoh@email.com" 
+                       required>
             </div>
             
             <!-- NIM dengan Validasi (Tahun Masuk ALL) -->
             <div class="form-group">
                 <label for="nim">🎓 NIM (Nomor Induk Mahasiswa)</label>
-                <input type="text" id="nim" name="nim" 
+                <input type="text" 
+                       id="nim" 
+                       name="nim"
+                       autocomplete="off"
                        placeholder="202441001" 
                        pattern="\d{9}"
                        maxlength="9"
@@ -307,7 +318,10 @@
             <!-- Konsentrasi -->
             <div class="form-group">
                 <label for="konsentrasi">📖 Konsentrasi</label>
-                <select id="konsentrasi" name="konsentrasi" required>
+                <select id="konsentrasi" 
+                        name="konsentrasi"
+                        autocomplete="off"
+                        required>
                     <option value="">Pilih Konsentrasi</option>
                     <option value="Humas">Humas</option>
                     <option value="Periklanan">Periklanan</option>
@@ -319,16 +333,24 @@
             <!-- Upload Cover sampai Lembar Persetujuan -->
             <div class="form-group">
                 <label for="fileCover">📄 Upload File (Cover - Lembar Persetujuan)</label>
-                <input type="file" id="fileCover" name="fileCover" 
-                       accept=".pdf" required>
+                <input type="file" 
+                       id="fileCover" 
+                       name="fileCover"
+                       autocomplete="off"
+                       accept=".pdf" 
+                       required>
                 <div class="info-text">Format PDF, maksimal 10MB</div>
             </div>
             
             <!-- Upload File Lengkap -->
             <div class="form-group">
                 <label for="fileLengkap">📑 Upload File Lengkap</label>
-                <input type="file" id="fileLengkap" name="fileLengkap" 
-                       accept=".pdf" required>
+                <input type="file" 
+                       id="fileLengkap" 
+                       name="fileLengkap"
+                       autocomplete="off"
+                       accept=".pdf" 
+                       required>
                 <div class="info-text">Format PDF, maksimal 20MB</div>
             </div>
             
@@ -399,11 +421,44 @@
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = () => {
-                    // Hapus prefix data:application/pdf;base64,
                     const base64 = reader.result.split(',')[1];
                     resolve(base64);
                 };
                 reader.onerror = error => reject(error);
+            });
+        }
+        
+        // Handle form submission dengan XMLHttpRequest (menghindari CORB)
+        function submitFormData(formData) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', SCRIPT_URL, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                xhr.onload = function() {
+                    if (xhr.status === 200 || xhr.status === 302) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            resolve(response);
+                        } catch (e) {
+                            // Jika response bukan JSON, anggap berhasil
+                            resolve({ status: 'success', message: 'Upload berhasil' });
+                        }
+                    } else {
+                        reject(new Error('Request failed with status: ' + xhr.status));
+                    }
+                };
+                
+                xhr.onerror = function() {
+                    reject(new Error('Network error'));
+                };
+                
+                xhr.ontimeout = function() {
+                    reject(new Error('Request timeout'));
+                };
+                
+                xhr.timeout = 60000; // 60 detik timeout
+                xhr.send(JSON.stringify(formData));
             });
         }
         
@@ -491,17 +546,9 @@
                     }
                 };
                 
-                // Kirim ke Google Apps Script
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Penting untuk CORS Google Apps Script
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
+                // Kirim menggunakan XMLHttpRequest (menghindari CORB)
+                await submitFormData(formData);
                 
-                // Karena mode no-cors, kita asumsikan berhasil
                 // Tampilkan pesan sukses
                 alertDiv.className = 'alert success';
                 alertDiv.style.display = 'block';
