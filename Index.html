@@ -6,6 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Form Pengumpulan Laporan PKL (S1)</title>
   <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #0d47a1;
+      --success: #27ae60;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
     * {
       margin: 0;
       padding: 0;
@@ -14,39 +23,120 @@
     
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--bg-gradient);
       min-height: 100vh;
       padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .container {
-      max-width: 600px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: 680px;
       background: white;
       border-radius: 20px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
       overflow: hidden;
+      animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     
     .header {
-      background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       color: white;
-      padding: 30px;
+      padding: 35px 30px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+      background-size: 30px 30px;
+      animation: patternMove 20s linear infinite;
+    }
+    
+    @keyframes patternMove {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(30px, 30px); }
     }
     
     .header h1 {
-      font-size: 24px;
+      font-size: 28px;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .header .icon {
+      font-size: 40px;
+      display: block;
       margin-bottom: 10px;
     }
     
     .header p {
       font-size: 14px;
-      opacity: 0.9;
+      opacity: 0.95;
+      position: relative;
+      z-index: 1;
     }
     
     .form-body {
-      padding: 30px;
+      padding: 35px;
+    }
+    
+    .alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .alert-info {
+      background: #e3f2fd;
+      color: #0d47a1;
+      border-left: 4px solid var(--primary);
+    }
+    
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border-left: 4px solid var(--success);
+    }
+    
+    .alert-warning {
+      background: #fff3cd;
+      color: #856404;
+      border-left: 4px solid var(--warning);
+    }
+    
+    .alert-danger {
+      background: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid var(--danger);
     }
     
     .form-group {
@@ -59,15 +149,15 @@
       color: #333;
       font-weight: 600;
       font-size: 14px;
+      transition: color 0.3s ease;
     }
     
     .required::after {
       content: " *";
-      color: #e74c3c;
+      color: var(--danger);
     }
     
-    input[type="text"],
-    select {
+    .input-field, select {
       width: 100%;
       padding: 12px 15px;
       border: 2px solid #e0e0e0;
@@ -75,20 +165,33 @@
       font-size: 14px;
       transition: all 0.3s ease;
       background-color: #fafafa;
+      font-family: inherit;
     }
     
-    input[type="text"]:focus,
-    select:focus {
+    .input-field:focus, select:focus {
       outline: none;
-      border-color: #1a73e8;
+      border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
       background-color: white;
     }
     
-    .file-input-wrapper {
+    .input-field.error, select.error {
+      border-color: var(--danger);
+      background-color: #fff5f5;
+    }
+    
+    .input-field.success {
+      border-color: var(--success);
+      background-color: #f0fff4;
+    }
+    
+    .input-field:disabled {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+    }
+    
+    .file-upload-wrapper {
       position: relative;
-      overflow: hidden;
-      display: inline-block;
       width: 100%;
     }
     
@@ -100,45 +203,72 @@
     .file-label {
       display: flex;
       align-items: center;
-      padding: 12px 15px;
-      background: #f5f5f5;
+      padding: 15px;
+      background: #f8f9fa;
       border: 2px dashed #ccc;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
       color: #666;
       font-weight: normal;
+      min-height: 60px;
     }
     
     .file-label:hover {
-      border-color: #1a73e8;
+      border-color: var(--primary);
       background: #f0f7ff;
-      color: #1a73e8;
+      color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(26, 115, 232, 0.1);
     }
     
-    .file-label i {
-      margin-right: 10px;
-      font-size: 20px;
+    .file-label.has-file {
+      border-color: var(--success);
+      border-style: solid;
+      background: #f0fff4;
+      color: var(--success);
+    }
+    
+    .file-label .file-icon {
+      margin-right: 12px;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    
+    .file-label .file-text {
+      flex: 1;
+      font-size: 14px;
+    }
+    
+    .file-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 12px;
     }
     
     .file-name {
-      margin-top: 5px;
-      font-size: 12px;
-      color: #666;
-      font-style: italic;
+      color: var(--success);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .file-size {
+      color: #999;
     }
     
     .file-hint {
-      font-size: 11px;
       color: #999;
-      margin-top: 5px;
-      display: block;
+      font-size: 11px;
     }
     
     .btn-submit {
       width: 100%;
       padding: 15px;
-      background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       color: white;
       border: none;
       border-radius: 8px;
@@ -148,11 +278,17 @@
       transition: all 0.3s ease;
       text-transform: uppercase;
       letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
     }
     
-    .btn-submit:hover {
+    .btn-submit:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 10px 20px rgba(26, 115, 232, 0.3);
+    }
+    
+    .btn-submit:active:not(:disabled) {
+      transform: translateY(0);
     }
     
     .btn-submit:disabled {
@@ -161,85 +297,174 @@
       transform: none;
     }
     
+    .btn-submit .btn-text {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .btn-submit .spinner {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+    }
+    
+    .btn-submit.loading .btn-text {
+      opacity: 0;
+    }
+    
+    .btn-submit.loading .spinner {
+      display: block;
+    }
+    
     .error-message {
-      color: #e74c3c;
+      color: var(--danger);
       font-size: 12px;
       margin-top: 5px;
       display: none;
+      animation: fadeIn 0.3s ease-in;
     }
     
-    .success-message {
-      background: #d4edda;
-      color: #155724;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+    .nim-status {
+      font-size: 12px;
+      margin-top: 5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .nim-valid {
+      color: var(--success);
+    }
+    
+    .nim-invalid {
+      color: var(--danger);
+    }
+    
+    .nim-checking {
+      color: var(--warning);
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: #e0e0e0;
+      border-radius: 2px;
+      margin-top: 15px;
+      overflow: hidden;
       display: none;
     }
     
-    .loading {
-      display: none;
+    .progress-bar.active {
+      display: block;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--success));
+      border-radius: 2px;
+      transition: width 0.3s ease;
+      animation: progressAnimation 2s ease-in-out infinite;
+    }
+    
+    @keyframes progressAnimation {
+      0% { width: 0%; }
+      50% { width: 70%; }
+      100% { width: 100%; }
+    }
+    
+    .footer {
       text-align: center;
       padding: 20px;
-    }
-    
-    .spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #1a73e8;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 10px;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .nim-info {
-      background: #f0f7ff;
-      border-left: 4px solid #1a73e8;
-      padding: 10px 15px;
-      margin-bottom: 20px;
-      border-radius: 4px;
-      font-size: 12px;
+      background: #f8f9fa;
       color: #666;
+      font-size: 12px;
+      border-top: 1px solid #e0e0e0;
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        border-radius: 0;
+      }
+      
+      .form-body {
+        padding: 20px;
+      }
+      
+      .header {
+        padding: 25px 20px;
+      }
+      
+      .header h1 {
+        font-size: 22px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>📄 Pengumpulan Laporan PKL</h1>
+      <span class="icon">📄</span>
+      <h1>Pengumpulan Laporan PKL</h1>
       <p>Program Studi Ilmu Komunikasi (S1)</p>
     </div>
     
     <div class="form-body">
-      <div class="nim-info">
-        <strong>ℹ️ Format NIM:</strong> 2022XXYYY (XX = 2 digit unik, YYY = 3 digit urut)<br>
-        Contoh: 202241003 (41 adalah kode unik yang valid)
+      <!-- Info Alert -->
+      <div class="alert alert-info" id="infoAlert">
+        <strong>ℹ️ Informasi Penting:</strong><br>
+        • Format NIM: 2022XXYYY (XX = 2 digit unik, YYY = 3 digit urut)<br>
+        • Setiap NIM hanya dapat mengumpulkan <strong>1 kali</strong><br>
+        • File harus dalam format <strong>PDF</strong>
       </div>
       
-      <div class="success-message" id="successMessage"></div>
+      <!-- Success Alert -->
+      <div class="alert alert-success" id="successAlert"></div>
       
-      <form id="pklForm">
+      <!-- Warning Alert -->
+      <div class="alert alert-warning" id="warningAlert"></div>
+      
+      <!-- Error Alert -->
+      <div class="alert alert-danger" id="errorAlert"></div>
+      
+      <form id="pklForm" novalidate>
+        <!-- Nama Lengkap -->
         <div class="form-group">
-          <label class="required">Nama Lengkap</label>
-          <input type="text" id="namaLengkap" name="namaLengkap" placeholder="Masukkan nama lengkap" required>
+          <label for="namaLengkap" class="required">Nama Lengkap</label>
+          <input 
+            type="text" 
+            id="namaLengkap" 
+            class="input-field" 
+            placeholder="Masukkan nama lengkap sesuai KTM"
+            autocomplete="name"
+            required>
           <div class="error-message" id="namaError"></div>
         </div>
         
+        <!-- NIM -->
         <div class="form-group">
-          <label class="required">NIM</label>
-          <input type="text" id="nim" name="nim" placeholder="Contoh: 202241003" required maxlength="9" pattern="\d{9}">
+          <label for="nim" class="required">Nomor Induk Mahasiswa (NIM)</label>
+          <input 
+            type="text" 
+            id="nim" 
+            class="input-field" 
+            placeholder="Contoh: 202241003"
+            maxlength="9"
+            pattern="[0-9]{9}"
+            inputmode="numeric"
+            autocomplete="off"
+            required>
+          <div class="nim-status" id="nimStatus"></div>
           <div class="error-message" id="nimError"></div>
         </div>
         
+        <!-- Konsentrasi -->
         <div class="form-group">
-          <label class="required">Konsentrasi</label>
-          <select id="konsentrasi" name="konsentrasi" required>
+          <label for="konsentrasi" class="required">Konsentrasi</label>
+          <select id="konsentrasi" class="input-field" required>
             <option value="">-- Pilih Konsentrasi --</option>
             <option value="Humas">Humas</option>
             <option value="Periklanan">Periklanan</option>
@@ -249,155 +474,448 @@
           <div class="error-message" id="konsentrasiError"></div>
         </div>
         
+        <!-- File Cover -->
         <div class="form-group">
-          <label class="required">File Cover - Lembar Persetujuan (PDF)</label>
-          <div class="file-input-wrapper">
-            <input type="file" id="coverFile" class="file-input" accept=".pdf" required>
+          <label class="required">File Cover - Lembar Persetujuan</label>
+          <div class="file-upload-wrapper">
+            <input 
+              type="file" 
+              id="coverFile" 
+              class="file-input" 
+              accept=".pdf,application/pdf"
+              required>
             <label for="coverFile" class="file-label" id="coverLabel">
-              <span>📁</span> Pilih file cover & lembar persetujuan...
+              <span class="file-icon">📁</span>
+              <span class="file-text">Pilih file cover & lembar persetujuan...</span>
             </label>
           </div>
-          <span class="file-name" id="coverFileName"></span>
-          <span class="file-hint">Format: PDF, Maks: 10MB</span>
+          <div class="file-info">
+            <span class="file-name" id="coverFileName"></span>
+            <span class="file-size" id="coverFileSize"></span>
+          </div>
+          <span class="file-hint">Format: PDF | Maks: 10MB</span>
           <div class="error-message" id="coverError"></div>
         </div>
         
+        <!-- File Lengkap -->
         <div class="form-group">
-          <label class="required">File Lengkap (PDF)</label>
-          <div class="file-input-wrapper">
-            <input type="file" id="completeFile" class="file-input" accept=".pdf" required>
+          <label class="required">File Lengkap</label>
+          <div class="file-upload-wrapper">
+            <input 
+              type="file" 
+              id="completeFile" 
+              class="file-input" 
+              accept=".pdf,application/pdf"
+              required>
             <label for="completeFile" class="file-label" id="completeLabel">
-              <span>📁</span> Pilih file lengkap...
+              <span class="file-icon">📁</span>
+              <span class="file-text">Pilih file lengkap laporan PKL...</span>
             </label>
           </div>
-          <span class="file-name" id="completeFileName"></span>
-          <span class="file-hint">Format: PDF, Maks: 25MB</span>
+          <div class="file-info">
+            <span class="file-name" id="completeFileName"></span>
+            <span class="file-size" id="completeFileSize"></span>
+          </div>
+          <span class="file-hint">Format: PDF | Maks: 25MB</span>
           <div class="error-message" id="completeError"></div>
         </div>
         
-        <div class="loading" id="loading">
-          <div class="spinner"></div>
-          <p>Sedang mengupload file...</p>
+        <!-- Progress Bar -->
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-fill"></div>
         </div>
         
+        <!-- Submit Button -->
         <button type="submit" class="btn-submit" id="submitBtn">
-          Submit Laporan PKL
+          <span class="btn-text">📤 Submit Laporan PKL</span>
+          <div class="spinner">⏳</div>
         </button>
       </form>
     </div>
+    
+    <div class="footer">
+      <p>© 2024 Program Studi Ilmu Komunikasi | Sistem Pengumpulan Laporan PKL</p>
+    </div>
   </div>
-  
+
   <script>
-    document.getElementById('coverFile').addEventListener('change', function(e) {
-      var fileName = e.target.files[0] ? e.target.files[0].name : '';
-      document.getElementById('coverFileName').textContent = fileName ? '✓ ' + fileName : '';
-      document.getElementById('coverLabel').querySelector('span').textContent = fileName ? '✅' : '📁';
-    });
+    // ============================================
+    // GLOBAL VARIABLES
+    // ============================================
+    const SPREADSHEET_ID = '1iW0lY6Ntg5sdPGgLdWL2iymIwZ_XzoTm3vgFcrdR7uI';
+    const FOLDER_MASTER_ID = '1ULWPd2AznRv-cTxj_lUrgqR-_2HIEOE8';
     
-    document.getElementById('completeFile').addEventListener('change', function(e) {
-      var fileName = e.target.files[0] ? e.target.files[0].name : '';
-      document.getElementById('completeFileName').textContent = fileName ? '✓ ' + fileName : '';
-      document.getElementById('completeLabel').querySelector('span').textContent = fileName ? '✅' : '📁';
-    });
+    let nimCheckTimeout;
+    let isNIMValid = false;
+    let isNIMUnique = false;
     
-    document.getElementById('nim').addEventListener('input', function(e) {
+    // ============================================
+    // DOM ELEMENTS
+    // ============================================
+    const form = document.getElementById('pklForm');
+    const namaInput = document.getElementById('namaLengkap');
+    const nimInput = document.getElementById('nim');
+    const konsentrasiSelect = document.getElementById('konsentrasi');
+    const coverFileInput = document.getElementById('coverFile');
+    const completeFileInput = document.getElementById('completeFile');
+    const submitBtn = document.getElementById('submitBtn');
+    const progressBar = document.getElementById('progressBar');
+    
+    // ============================================
+    // FILE INPUT HANDLERS
+    // ============================================
+    function handleFileSelect(inputElement, labelElement, fileNameElement, fileSizeElement, maxSize) {
+      inputElement.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const label = labelElement || document.getElementById(inputElement.id + 'Label');
+        const fileName = fileNameElement || document.getElementById(inputElement.id + 'FileName');
+        const fileSize = fileSizeElement || document.getElementById(inputElement.id + 'FileSize');
+        
+        if (file) {
+          // Check file type
+          if (file.type !== 'application/pdf') {
+            showError(inputElement.id + 'Error', 'File harus dalam format PDF');
+            inputElement.value = '';
+            label.classList.remove('has-file');
+            label.querySelector('.file-icon').textContent = '📁';
+            label.querySelector('.file-text').textContent = 'Pilih file...';
+            fileName.textContent = '';
+            fileSize.textContent = '';
+            return;
+          }
+          
+          // Check file size
+          if (file.size > maxSize) {
+            const sizeMB = (maxSize / (1024 * 1024)).toFixed(0);
+            showError(inputElement.id + 'Error', `Ukuran file maksimal ${sizeMB}MB`);
+            inputElement.value = '';
+            label.classList.remove('has-file');
+            label.querySelector('.file-icon').textContent = '📁';
+            label.querySelector('.file-text').textContent = 'Pilih file...';
+            fileName.textContent = '';
+            fileSize.textContent = '';
+            return;
+          }
+          
+          // Valid file
+          hideError(inputElement.id + 'Error');
+          label.classList.add('has-file');
+          label.querySelector('.file-icon').textContent = '✅';
+          label.querySelector('.file-text').textContent = 'File dipilih';
+          fileName.innerHTML = '✓ ' + file.name;
+          
+          // Format file size
+          const sizeKB = (file.size / 1024).toFixed(1);
+          const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+          fileSize.textContent = file.size > 1024 * 1024 ? sizeMB + ' MB' : sizeKB + ' KB';
+          
+        } else {
+          label.classList.remove('has-file');
+          label.querySelector('.file-icon').textContent = '📁';
+          label.querySelector('.file-text').textContent = 'Pilih file...';
+          fileName.textContent = '';
+          fileSize.textContent = '';
+        }
+      });
+    }
+    
+    // Initialize file handlers
+    handleFileSelect(
+      coverFileInput, 
+      document.getElementById('coverLabel'),
+      document.getElementById('coverFileName'),
+      document.getElementById('coverFileSize'),
+      10 * 1024 * 1024 // 10MB
+    );
+    
+    handleFileSelect(
+      completeFileInput,
+      document.getElementById('completeLabel'),
+      document.getElementById('completeFileName'),
+      document.getElementById('completeFileSize'),
+      25 * 1024 * 1024 // 25MB
+    );
+    
+    // ============================================
+    // NIM VALIDATION & DUPLICATE CHECKING
+    // ============================================
+    nimInput.addEventListener('input', function(e) {
+      // Only allow numbers
       this.value = this.value.replace(/[^0-9]/g, '');
       if (this.value.length > 9) {
         this.value = this.value.slice(0, 9);
       }
+      
+      // Clear previous timeout
+      clearTimeout(nimCheckTimeout);
+      
+      const nim = this.value.trim();
+      const statusElement = document.getElementById('nimStatus');
+      const errorElement = document.getElementById('nimError');
+      
+      // Reset states
+      this.classList.remove('success', 'error');
+      hideError('nimError');
+      statusElement.textContent = '';
+      statusElement.className = 'nim-status';
+      isNIMValid = false;
+      isNIMUnique = false;
+      hideAlert('warningAlert');
+      
+      if (nim.length === 9) {
+        statusElement.textContent = '⏳ Memeriksa NIM...';
+        statusElement.className = 'nim-status nim-checking';
+        
+        // Delay validation to prevent too many calls
+        nimCheckTimeout = setTimeout(() => {
+          // Step 1: Validate NIM format
+          google.script.run
+            .withSuccessHandler(function(validationResult) {
+              if (!validationResult.valid) {
+                // Invalid format
+                nimInput.classList.add('error');
+                showError('nimError', validationResult.message);
+                statusElement.textContent = '❌ Format NIM tidak valid';
+                statusElement.className = 'nim-status nim-invalid';
+                isNIMValid = false;
+                isNIMUnique = false;
+              } else {
+                // Format valid, check duplicate
+                google.script.run
+                  .withSuccessHandler(function(dupResult) {
+                    if (dupResult.isDuplicate) {
+                      // Duplicate found
+                      nimInput.classList.add('error');
+                      showAlert('warningAlert', 
+                        '⚠️ ' + dupResult.message + '<br>' +
+                        '<small>NIM ini sudah pernah mengumpulkan laporan PKL sebelumnya.</small>'
+                      );
+                      statusElement.textContent = '⚠️ NIM sudah terdaftar';
+                      statusElement.className = 'nim-status nim-invalid';
+                      isNIMValid = true;
+                      isNIMUnique = false;
+                    } else {
+                      // All good
+                      nimInput.classList.add('success');
+                      hideAlert('warningAlert');
+                      statusElement.innerHTML = '✅ NIM valid dan belum terdaftar';
+                      statusElement.className = 'nim-status nim-valid';
+                      isNIMValid = true;
+                      isNIMUnique = true;
+                    }
+                  })
+                  .withFailureHandler(function(error) {
+                    statusElement.textContent = '⚠️ Gagal memeriksa NIM';
+                    statusElement.className = 'nim-status nim-invalid';
+                    console.error('Duplicate check error:', error);
+                  })
+                  .checkDuplicateNIM(nim);
+              }
+            })
+            .withFailureHandler(function(error) {
+              statusElement.textContent = '⚠️ Gagal validasi NIM';
+              statusElement.className = 'nim-status nim-invalid';
+              console.error('NIM validation error:', error);
+            })
+            .validateNIM(nim);
+        }, 800);
+        
+      } else if (nim.length > 0) {
+        statusElement.textContent = '⌨️ Mengetik... (' + nim.length + '/9)';
+        statusElement.className = 'nim-status nim-checking';
+      }
     });
     
-    document.getElementById('pklForm').addEventListener('submit', function(e) {
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    function showError(elementId, message) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = message;
+        element.style.display = 'block';
+      }
+    }
+    
+    function hideError(elementId) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.style.display = 'none';
+      }
+    }
+    
+    function showAlert(alertId, message) {
+      const alert = document.getElementById(alertId);
+      if (alert) {
+        alert.innerHTML = message;
+        alert.style.display = 'block';
+      }
+    }
+    
+    function hideAlert(alertId) {
+      const alert = document.getElementById(alertId);
+      if (alert) {
+        alert.style.display = 'none';
+      }
+    }
+    
+    function hideAllAlerts() {
+      ['successAlert', 'warningAlert', 'errorAlert'].forEach(id => hideAlert(id));
+    }
+    
+    function resetForm() {
+      form.reset();
+      nimInput.classList.remove('success', 'error');
+      document.getElementById('nimStatus').textContent = '';
+      document.getElementById('nimStatus').className = 'nim-status';
+      isNIMValid = false;
+      isNIMUnique = false;
+      
+      // Reset file labels
+      ['cover', 'complete'].forEach(type => {
+        const label = document.getElementById(type + 'Label');
+        const fileName = document.getElementById(type + 'FileName');
+        const fileSize = document.getElementById(type + 'FileSize');
+        
+        label.classList.remove('has-file');
+        label.querySelector('.file-icon').textContent = '📁';
+        label.querySelector('.file-text').textContent = 'Pilih file...';
+        fileName.textContent = '';
+        fileSize.textContent = '';
+      });
+      
+      // Hide all errors
+      document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+    }
+    
+    function setLoading(isLoading) {
+      if (isLoading) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+        progressBar.classList.add('active');
+      } else {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+        progressBar.classList.remove('active');
+      }
+    }
+    
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    form.addEventListener('submit', function(e) {
       e.preventDefault();
       
-      // Reset error messages
+      // Reset all alerts and errors
+      hideAllAlerts();
       document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-      document.getElementById('successMessage').style.display = 'none';
       
-      var isValid = true;
-      var namaLengkap = document.getElementById('namaLengkap').value.trim();
-      var nim = document.getElementById('nim').value.trim();
-      var konsentrasi = document.getElementById('konsentrasi').value;
-      var coverFile = document.getElementById('coverFile').files[0];
-      var completeFile = document.getElementById('completeFile').files[0];
+      let isValid = true;
       
-      // Validate nama
+      // Validate Nama Lengkap
+      const namaLengkap = namaInput.value.trim();
       if (!namaLengkap) {
-        document.getElementById('namaError').textContent = 'Nama lengkap harus diisi';
-        document.getElementById('namaError').style.display = 'block';
+        showError('namaError', 'Nama lengkap wajib diisi');
+        namaInput.classList.add('error');
         isValid = false;
+      } else if (namaLengkap.length < 3) {
+        showError('namaError', 'Nama lengkap minimal 3 karakter');
+        namaInput.classList.add('error');
+        isValid = false;
+      } else {
+        namaInput.classList.remove('error');
       }
       
-      // Validate NIM format
+      // Validate NIM
+      const nim = nimInput.value.trim();
       if (!nim) {
-        document.getElementById('nimError').textContent = 'NIM harus diisi';
-        document.getElementById('nimError').style.display = 'block';
+        showError('nimError', 'NIM wajib diisi');
+        nimInput.classList.add('error');
         isValid = false;
-      } else if (!/^\d{9}$/.test(nim)) {
-        document.getElementById('nimError').textContent = 'NIM harus 9 digit angka';
-        document.getElementById('nimError').style.display = 'block';
+      } else if (!isNIMValid) {
+        showError('nimError', 'Format NIM tidak valid');
+        nimInput.classList.add('error');
+        isValid = false;
+      } else if (!isNIMUnique) {
+        showError('nimError', 'NIM sudah pernah mengumpulkan laporan');
+        nimInput.classList.add('error');
         isValid = false;
       }
       
-      // Validate konsentrasi
+      // Validate Konsentrasi
+      const konsentrasi = konsentrasiSelect.value;
       if (!konsentrasi) {
-        document.getElementById('konsentrasiError').textContent = 'Pilih konsentrasi';
-        document.getElementById('konsentrasiError').style.display = 'block';
+        showError('konsentrasiError', 'Pilih konsentrasi');
+        konsentrasiSelect.classList.add('error');
         isValid = false;
+      } else {
+        konsentrasiSelect.classList.remove('error');
       }
       
-      // Validate files
+      // Validate Cover File
+      const coverFile = coverFileInput.files[0];
       if (!coverFile) {
-        document.getElementById('coverError').textContent = 'File cover harus diupload';
-        document.getElementById('coverError').style.display = 'block';
+        showError('coverError', 'File cover wajib diupload');
         isValid = false;
       } else if (coverFile.type !== 'application/pdf') {
-        document.getElementById('coverError').textContent = 'File harus dalam format PDF';
-        document.getElementById('coverError').style.display = 'block';
+        showError('coverError', 'File harus dalam format PDF');
         isValid = false;
       } else if (coverFile.size > 10 * 1024 * 1024) {
-        document.getElementById('coverError').textContent = 'Ukuran file maksimal 10MB';
-        document.getElementById('coverError').style.display = 'block';
+        showError('coverError', 'Ukuran file maksimal 10MB');
         isValid = false;
       }
       
+      // Validate Complete File
+      const completeFile = completeFileInput.files[0];
       if (!completeFile) {
-        document.getElementById('completeError').textContent = 'File lengkap harus diupload';
-        document.getElementById('completeError').style.display = 'block';
+        showError('completeError', 'File lengkap wajib diupload');
         isValid = false;
       } else if (completeFile.type !== 'application/pdf') {
-        document.getElementById('completeError').textContent = 'File harus dalam format PDF';
-        document.getElementById('completeError').style.display = 'block';
+        showError('completeError', 'File harus dalam format PDF');
         isValid = false;
       } else if (completeFile.size > 25 * 1024 * 1024) {
-        document.getElementById('completeError').textContent = 'Ukuran file maksimal 25MB';
-        document.getElementById('completeError').style.display = 'block';
+        showError('completeError', 'Ukuran file maksimal 25MB');
         isValid = false;
       }
       
       if (!isValid) return;
       
-      // Show loading
-      document.getElementById('submitBtn').disabled = true;
-      document.getElementById('loading').style.display = 'block';
+      // Final duplicate check before upload
+      setLoading(true);
+      
+      google.script.run
+        .withSuccessHandler(function(dupCheck) {
+          if (dupCheck.isDuplicate) {
+            setLoading(false);
+            showAlert('warningAlert', '❌ ' + dupCheck.message);
+            return;
+          }
+          
+          // Proceed with upload
+          uploadFiles();
+        })
+        .withFailureHandler(function(error) {
+          setLoading(false);
+          showAlert('errorAlert', '❌ Gagal memeriksa duplikasi: ' + error.message);
+        })
+        .checkDuplicateNIM(nim);
+    });
+    
+    function uploadFiles() {
+      const namaLengkap = namaInput.value.trim();
+      const nim = nimInput.value.trim();
+      const konsentrasi = konsentrasiSelect.value;
+      const coverFile = coverFileInput.files[0];
+      const completeFile = completeFileInput.files[0];
       
       // Read files as base64
-      var reader1 = new FileReader();
-      var reader2 = new FileReader();
+      let filesProcessed = 0;
+      let coverData, completeData;
       
-      reader1.onload = function(e) {
-        var coverData = {
-          data: e.target.result.split(',')[1],
-          mimeType: coverFile.type
-        };
-        
-        reader2.onload = function(e) {
-          var completeData = {
-            data: e.target.result.split(',')[1],
-            mimeType: completeFile.type
-          };
-          
-          var formData = {
+      function processUpload() {
+        filesProcessed++;
+        if (filesProcessed === 2) {
+          const formData = {
             namaLengkap: namaLengkap,
             nim: nim,
             konsentrasi: konsentrasi,
@@ -407,34 +925,89 @@
           
           google.script.run
             .withSuccessHandler(function(response) {
-              document.getElementById('loading').style.display = 'none';
-              document.getElementById('submitBtn').disabled = false;
+              setLoading(false);
               
               if (response.success) {
-                document.getElementById('successMessage').textContent = response.message;
-                document.getElementById('successMessage').style.display = 'block';
-                document.getElementById('pklForm').reset();
-                document.getElementById('coverFileName').textContent = '';
-                document.getElementById('completeFileName').textContent = '';
-                document.getElementById('coverLabel').querySelector('span').textContent = '📁';
-                document.getElementById('completeLabel').querySelector('span').textContent = '📁';
+                showAlert('successAlert', 
+                  '✅ <strong>' + response.message + '</strong><br><br>' +
+                  '📂 <a href="' + response.folderLink + '" target="_blank" style="color: #1a73e8;">Buka Folder Google Drive</a><br>' +
+                  '📄 <a href="' + response.coverFileLink + '" target="_blank" style="color: #1a73e8;">Lihat File Cover</a><br>' +
+                  '📄 <a href="' + response.completeFileLink + '" target="_blank" style="color: #1a73e8;">Lihat File Lengkap</a><br>' +
+                  '<small>📧 Email konfirmasi telah dikirim ke email Anda</small>'
+                );
+                
+                // Reset form
+                resetForm();
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
               } else {
-                alert(response.message);
+                if (response.isDuplicate) {
+                  showAlert('warningAlert', '❌ ' + response.message);
+                } else {
+                  showAlert('errorAlert', '❌ Gagal upload: ' + response.message);
+                }
               }
             })
             .withFailureHandler(function(error) {
-              document.getElementById('loading').style.display = 'none';
-              document.getElementById('submitBtn').disabled = false;
-              alert('Terjadi kesalahan: ' + error.message);
+              setLoading(false);
+              showAlert('errorAlert', '❌ Terjadi kesalahan sistem: ' + error.message);
             })
             .uploadFiles(formData);
+        }
+      }
+      
+      // Read cover file
+      const reader1 = new FileReader();
+      reader1.onload = function(e) {
+        coverData = {
+          data: e.target.result.split(',')[1],
+          mimeType: coverFile.type
         };
-        
-        reader2.readAsDataURL(completeFile);
+        processUpload();
+      };
+      reader1.onerror = function() {
+        setLoading(false);
+        showAlert('errorAlert', '❌ Gagal membaca file cover');
       };
       
+      // Read complete file
+      const reader2 = new FileReader();
+      reader2.onload = function(e) {
+        completeData = {
+          data: e.target.result.split(',')[1],
+          mimeType: completeFile.type
+        };
+        processUpload();
+      };
+      reader2.onerror = function() {
+        setLoading(false);
+        showAlert('errorAlert', '❌ Gagal membaca file lengkap');
+      };
+      
+      // Start reading files
       reader1.readAsDataURL(coverFile);
-    });
+      reader2.readAsDataURL(completeFile);
+    }
+    
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    // Show info alert on load
+    showAlert('infoAlert', 
+      '<strong>ℹ️ Informasi Penting:</strong><br>' +
+      '• Format NIM: 2022XXYYY (XX = 2 digit unik, YYY = 3 digit urut)<br>' +
+      '• Setiap NIM hanya dapat mengumpulkan <strong>1 kali</strong><br>' +
+      '• File harus dalam format <strong>PDF</strong>'
+    );
+    
+    // Focus on first input
+    namaInput.focus();
+    
+    console.log('Form Pengumpulan Laporan PKL (S1) - Initialized');
+    console.log('Spreadsheet ID:', SPREADSHEET_ID);
+    console.log('Folder Master ID:', FOLDER_MASTER_ID);
   </script>
 </body>
 </html>
