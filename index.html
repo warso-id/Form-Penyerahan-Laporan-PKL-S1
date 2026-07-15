@@ -421,44 +421,11 @@
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = () => {
+                    // Hapus prefix data:application/pdf;base64,
                     const base64 = reader.result.split(',')[1];
                     resolve(base64);
                 };
                 reader.onerror = error => reject(error);
-            });
-        }
-        
-        // Handle form submission dengan XMLHttpRequest (menghindari CORB)
-        function submitFormData(formData) {
-            return new Promise((resolve, reject) => {
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', SCRIPT_URL, true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                
-                xhr.onload = function() {
-                    if (xhr.status === 200 || xhr.status === 302) {
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            resolve(response);
-                        } catch (e) {
-                            // Jika response bukan JSON, anggap berhasil
-                            resolve({ status: 'success', message: 'Upload berhasil' });
-                        }
-                    } else {
-                        reject(new Error('Request failed with status: ' + xhr.status));
-                    }
-                };
-                
-                xhr.onerror = function() {
-                    reject(new Error('Network error'));
-                };
-                
-                xhr.ontimeout = function() {
-                    reject(new Error('Request timeout'));
-                };
-                
-                xhr.timeout = 60000; // 60 detik timeout
-                xhr.send(JSON.stringify(formData));
             });
         }
         
@@ -546,8 +513,15 @@
                     }
                 };
                 
-                // Kirim menggunakan XMLHttpRequest (menghindari CORB)
-                await submitFormData(formData);
+                // Kirim ke Google Apps Script dengan mode no-cors
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
                 
                 // Tampilkan pesan sukses
                 alertDiv.className = 'alert success';
