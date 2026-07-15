@@ -561,6 +561,11 @@
 
   <script>
     // ============================================
+    // CONFIGURATION
+    // ============================================
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQR7L5aEftRG0FJ8xrv2m0zV3tlBIFEqysiPtH8uUIDM3FWu9AdurYyTYf2ML-I8Q0yA/exec';
+    
+    // ============================================
     // GLOBAL VARIABLES
     // ============================================
     let nimCheckTimeout;
@@ -578,6 +583,49 @@
     const completeFileInput = document.getElementById('completeFile');
     const submitBtn = document.getElementById('submitBtn');
     const progressBar = document.getElementById('progressBar');
+    
+    // ============================================
+    // GOOGLE APPS SCRIPT API HELPER
+    // ============================================
+    function callGoogleScript(functionName, params = []) {
+      return new Promise((resolve, reject) => {
+        // Check if running in Google Apps Script environment
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          // Use native Google Apps Script API
+          const runner = google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject);
+          
+          if (params.length > 0) {
+            runner[functionName](...params);
+          } else {
+            runner[functionName]();
+          }
+        } else {
+          // Use fetch API for external hosting (GitHub Pages, etc.)
+          const url = new URL(SCRIPT_URL);
+          url.searchParams.append('action', functionName);
+          
+          const options = {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            }
+          };
+          
+          if (params.length > 0) {
+            url.searchParams.append('params', JSON.stringify(params));
+            options.body = JSON.stringify({ params: params });
+          }
+          
+          fetch(url, options)
+            .then(response => response.json())
+            .then(resolve)
+            .catch(reject);
+        }
+      });
+    }
     
     // ============================================
     // FILE INPUT HANDLERS
@@ -669,7 +717,6 @@
       
       const nim = this.value.trim();
       const statusElement = document.getElementById('nimStatus');
-      const errorElement = document.getElementById('nimError');
       
       // Reset states
       this.classList.remove('success', 'error');
@@ -685,58 +732,50 @@
         statusElement.className = 'nim-status nim-checking';
         
         // Delay validation to prevent too many calls
-        nimCheckTimeout = setTimeout(() => {
-          // Step 1: Validate NIM format
-          google.script.run
-            .withSuccessHandler(function(validationResult) {
-              if (!validationResult.valid) {
-                // Invalid format
+        nimCheckTimeout = setTimeout(async () => {
+          try {
+            // Step 1: Validate NIM format
+            const validationResult = await callGoogleScript('validateNIM', [nim]);
+            
+            if (!validationResult.valid) {
+              // Invalid format
+              nimInput.classList.add('error');
+              showError('nimError', validationResult.message);
+              statusElement.textContent = '❌ Format NIM tidak valid';
+              statusElement.className = 'nim-status nim-invalid';
+              isNIMValid = false;
+              isNIMUnique = false;
+            } else {
+              // Format valid, check duplicate
+              const dupResult = await callGoogleScript('checkDuplicateNIM', [nim]);
+              
+              if (dupResult.isDuplicate) {
+                // Duplicate found
                 nimInput.classList.add('error');
-                showError('nimError', validationResult.message);
-                statusElement.textContent = '❌ Format NIM tidak valid';
+                showAlert('warningAlert', 
+                  '<strong>⚠️ NIM Sudah Terdaftar</strong><br>' +
+                  dupResult.message + '<br>' +
+                  '<small>NIM ini sudah pernah mengumpulkan laporan PKL sebelumnya.</small>'
+                );
+                statusElement.textContent = '⚠️ NIM sudah terdaftar';
                 statusElement.className = 'nim-status nim-invalid';
-                isNIMValid = false;
+                isNIMValid = true;
                 isNIMUnique = false;
               } else {
-                // Format valid, check duplicate
-                google.script.run
-                  .withSuccessHandler(function(dupResult) {
-                    if (dupResult.isDuplicate) {
-                      // Duplicate found
-                      nimInput.classList.add('error');
-                      showAlert('warningAlert', 
-                        '<strong>⚠️ NIM Sudah Terdaftar</strong><br>' +
-                        dupResult.message + '<br>' +
-                        '<small>NIM ini sudah pernah mengumpulkan laporan PKL sebelumnya.</small>'
-                      );
-                      statusElement.textContent = '⚠️ NIM sudah terdaftar';
-                      statusElement.className = 'nim-status nim-invalid';
-                      isNIMValid = true;
-                      isNIMUnique = false;
-                    } else {
-                      // All good
-                      nimInput.classList.add('success');
-                      hideAlert('warningAlert');
-                      statusElement.innerHTML = '✅ NIM valid dan belum terdaftar';
-                      statusElement.className = 'nim-status nim-valid';
-                      isNIMValid = true;
-                      isNIMUnique = true;
-                    }
-                  })
-                  .withFailureHandler(function(error) {
-                    statusElement.textContent = '⚠️ Gagal memeriksa NIM';
-                    statusElement.className = 'nim-status nim-invalid';
-                    console.error('Duplicate check error:', error);
-                  })
-                  .checkDuplicateNIM(nim);
+                // All good
+                nimInput.classList.add('success');
+                hideAlert('warningAlert');
+                statusElement.innerHTML = '✅ NIM valid dan belum terdaftar';
+                statusElement.className = 'nim-status nim-valid';
+                isNIMValid = true;
+                isNIMUnique = true;
               }
-            })
-            .withFailureHandler(function(error) {
-              statusElement.textContent = '⚠️ Gagal validasi NIM';
-              statusElement.className = 'nim-status nim-invalid';
-              console.error('NIM validation error:', error);
-            })
-            .validateNIM(nim);
+            }
+          } catch (error) {
+            statusElement.textContent = '⚠️ Gagal memeriksa NIM';
+            statusElement.className = 'nim-status nim-invalid';
+            console.error('NIM validation error:', error);
+          }
         }, 800);
         
       } else if (nim.length > 0) {
@@ -832,7 +871,7 @@
     // ============================================
     // FORM SUBMISSION
     // ============================================
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
       e.preventDefault();
       
       // Reset all alerts and errors
@@ -916,149 +955,121 @@
       // Final duplicate check before upload
       setLoading(true);
       
-      google.script.run
-        .withSuccessHandler(function(dupCheck) {
-          if (dupCheck.isDuplicate) {
-            setLoading(false);
-            showAlert('warningAlert', 
-              '<strong>❌ Gagal Submit</strong><br>' + 
-              dupCheck.message + '<br>' +
-              '<small>NIM ini sudah pernah mengumpulkan laporan PKL.</small>'
-            );
-            return;
-          }
-          
-          // Proceed with upload
-          uploadFiles();
-        })
-        .withFailureHandler(function(error) {
+      try {
+        const dupCheck = await callGoogleScript('checkDuplicateNIM', [nim]);
+        
+        if (dupCheck.isDuplicate) {
           setLoading(false);
-          showAlert('errorAlert', 
-            '<strong>❌ Kesalahan Sistem</strong><br>' + 
-            'Gagal memeriksa data: ' + error.message
+          showAlert('warningAlert', 
+            '<strong>❌ Gagal Submit</strong><br>' + 
+            dupCheck.message + '<br>' +
+            '<small>NIM ini sudah pernah mengumpulkan laporan PKL.</small>'
           );
-        })
-        .checkDuplicateNIM(nim);
+          return;
+        }
+        
+        // Proceed with upload
+        await uploadFiles();
+        
+      } catch (error) {
+        setLoading(false);
+        showAlert('errorAlert', 
+          '<strong>❌ Kesalahan Sistem</strong><br>' + 
+          'Gagal memeriksa data: ' + error.message
+        );
+      }
     });
     
-    function uploadFiles() {
+    async function uploadFiles() {
       const namaLengkap = namaInput.value.trim();
       const nim = nimInput.value.trim();
       const konsentrasi = konsentrasiSelect.value;
       const coverFile = coverFileInput.files[0];
       const completeFile = completeFileInput.files[0];
       
-      // Read files as base64
-      let filesProcessed = 0;
-      let coverData, completeData;
-      
-      function processUpload() {
-        filesProcessed++;
-        if (filesProcessed === 2) {
-          const formData = {
-            namaLengkap: namaLengkap,
-            nim: nim,
-            konsentrasi: konsentrasi,
-            coverFile: coverData,
-            completeFile: completeData
-          };
+      try {
+        // Read files as base64
+        const coverData = await readFileAsBase64(coverFile);
+        const completeData = await readFileAsBase64(completeFile);
+        
+        const formData = {
+          namaLengkap: namaLengkap,
+          nim: nim,
+          konsentrasi: konsentrasi,
+          coverFile: {
+            data: coverData.split(',')[1],
+            mimeType: coverFile.type
+          },
+          completeFile: {
+            data: completeData.split(',')[1],
+            mimeType: completeFile.type
+          }
+        };
+        
+        const response = await callGoogleScript('uploadFiles', [formData]);
+        
+        setLoading(false);
+        
+        if (response.success) {
+          const successHTML = 
+            '<strong>✅ ' + response.message + '</strong>' +
+            '<div class="success-links">' +
+            '<a href="' + response.folderLink + '" target="_blank">📂 Buka Folder Google Drive</a>' +
+            '<a href="' + response.coverFileLink + '" target="_blank">📄 Lihat File Cover</a>' +
+            '<a href="' + response.completeFileLink + '" target="_blank">📄 Lihat File Lengkap</a>' +
+            '</div>' +
+            '<small style="display:block; margin-top:10px;">📧 Email konfirmasi telah dikirim ke email Anda</small>' +
+            '<small>📅 Semester: ' + response.semester + '</small>';
           
-          google.script.run
-            .withSuccessHandler(function(response) {
-              setLoading(false);
-              
-              if (response.success) {
-                const successHTML = 
-                  '<strong>✅ ' + response.message + '</strong>' +
-                  '<div class="success-links">' +
-                  '<a href="' + response.folderLink + '" target="_blank">📂 Buka Folder Google Drive</a>' +
-                  '<a href="' + response.coverFileLink + '" target="_blank">📄 Lihat File Cover</a>' +
-                  '<a href="' + response.completeFileLink + '" target="_blank">📄 Lihat File Lengkap</a>' +
-                  '</div>' +
-                  '<small style="display:block; margin-top:10px;">📧 Email konfirmasi telah dikirim ke email Anda</small>' +
-                  '<small>📅 Semester: ' + response.semester + '</small>';
-                
-                showAlert('successAlert', successHTML);
-                
-                // Reset form
-                resetForm();
-                
-                // Show info alert again
-                document.getElementById('infoAlert').style.display = 'block';
-                
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                
-              } else {
-                if (response.isDuplicate) {
-                  showAlert('warningAlert', 
-                    '<strong>❌ Gagal Submit</strong><br>' + 
-                    response.message
-                  );
-                } else {
-                  showAlert('errorAlert', 
-                    '<strong>❌ Gagal Upload</strong><br>' + 
-                    response.message
-                  );
-                }
-              }
-            })
-            .withFailureHandler(function(error) {
-              setLoading(false);
-              showAlert('errorAlert', 
-                '<strong>❌ Kesalahan Sistem</strong><br>' + 
-                'Terjadi kesalahan: ' + error.message + '<br>' +
-                '<small>Silakan coba lagi atau hubungi administrator.</small>'
-              );
-            })
-            .uploadFiles(formData);
+          showAlert('successAlert', successHTML);
+          
+          // Reset form
+          resetForm();
+          
+          // Show info alert again
+          document.getElementById('infoAlert').style.display = 'block';
+          
+          // Scroll to top
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          
+        } else {
+          if (response.isDuplicate) {
+            showAlert('warningAlert', 
+              '<strong>❌ Gagal Submit</strong><br>' + 
+              response.message
+            );
+          } else {
+            showAlert('errorAlert', 
+              '<strong>❌ Gagal Upload</strong><br>' + 
+              response.message
+            );
+          }
         }
+        
+      } catch (error) {
+        setLoading(false);
+        showAlert('errorAlert', 
+          '<strong>❌ Kesalahan Sistem</strong><br>' + 
+          'Terjadi kesalahan: ' + error.message + '<br>' +
+          '<small>Silakan coba lagi atau hubungi administrator.</small>'
+        );
       }
-      
-      // Read cover file
-      const reader1 = new FileReader();
-      reader1.onload = function(e) {
-        coverData = {
-          data: e.target.result.split(',')[1],
-          mimeType: coverFile.type
-        };
-        processUpload();
-      };
-      reader1.onerror = function() {
-        setLoading(false);
-        showAlert('errorAlert', 
-          '<strong>❌ Kesalahan</strong><br>' + 
-          'Gagal membaca file cover. Silakan coba lagi.'
-        );
-      };
-      
-      // Read complete file
-      const reader2 = new FileReader();
-      reader2.onload = function(e) {
-        completeData = {
-          data: e.target.result.split(',')[1],
-          mimeType: completeFile.type
-        };
-        processUpload();
-      };
-      reader2.onerror = function() {
-        setLoading(false);
-        showAlert('errorAlert', 
-          '<strong>❌ Kesalahan</strong><br>' + 
-          'Gagal membaca file lengkap. Silakan coba lagi.'
-        );
-      };
-      
-      // Start reading files
-      reader1.readAsDataURL(coverFile);
-      reader2.readAsDataURL(completeFile);
+    }
+    
+    function readFileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Gagal membaca file: ' + file.name));
+        reader.readAsDataURL(file);
+      });
     }
     
     // ============================================
     // INITIALIZATION
     // ============================================
     console.log('Form Pengumpulan Laporan PKL (S1) - Initialized');
-    console.log('Deployment URL: https://script.google.com/macros/s/AKfycbzQR7L5aEftRG0FJ8xrv2m0zV3tlBIFEqysiPtH8uUIDM3FWu9AdurYyTYf2ML-I8Q0yA/exec');
+    console.log('Deployment URL:', SCRIPT_URL);
     
     // Focus on first input after page load
     setTimeout(() => {
