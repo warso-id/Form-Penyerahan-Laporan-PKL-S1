@@ -119,6 +119,7 @@
       background: #e3f2fd;
       color: #0d47a1;
       border-left: 4px solid var(--primary);
+      display: block;
     }
     
     .alert-success {
@@ -309,6 +310,7 @@
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 1;
+      font-size: 20px;
     }
     
     .btn-submit.loading .btn-text {
@@ -383,6 +385,25 @@
       color: #666;
       font-size: 12px;
       border-top: 1px solid #e0e0e0;
+    }
+    
+    .success-links {
+      margin-top: 10px;
+      padding: 10px;
+      background: white;
+      border-radius: 5px;
+    }
+    
+    .success-links a {
+      display: block;
+      padding: 5px 0;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    
+    .success-links a:hover {
+      text-decoration: underline;
     }
     
     @media (max-width: 600px) {
@@ -528,7 +549,7 @@
         <!-- Submit Button -->
         <button type="submit" class="btn-submit" id="submitBtn">
           <span class="btn-text">📤 Submit Laporan PKL</span>
-          <div class="spinner">⏳</div>
+          <span class="spinner">⏳</span>
         </button>
       </form>
     </div>
@@ -542,9 +563,6 @@
     // ============================================
     // GLOBAL VARIABLES
     // ============================================
-    const SPREADSHEET_ID = '1iW0lY6Ntg5sdPGgLdWL2iymIwZ_XzoTm3vgFcrdR7uI';
-    const FOLDER_MASTER_ID = '1ULWPd2AznRv-cTxj_lUrgqR-_2HIEOE8';
-    
     let nimCheckTimeout;
     let isNIMValid = false;
     let isNIMUnique = false;
@@ -567,9 +585,9 @@
     function handleFileSelect(inputElement, labelElement, fileNameElement, fileSizeElement, maxSize) {
       inputElement.addEventListener('change', function(e) {
         const file = e.target.files[0];
-        const label = labelElement || document.getElementById(inputElement.id + 'Label');
-        const fileName = fileNameElement || document.getElementById(inputElement.id + 'FileName');
-        const fileSize = fileSizeElement || document.getElementById(inputElement.id + 'FileSize');
+        const label = labelElement;
+        const fileName = fileNameElement;
+        const fileSize = fileSizeElement;
         
         if (file) {
           // Check file type
@@ -587,7 +605,7 @@
           // Check file size
           if (file.size > maxSize) {
             const sizeMB = (maxSize / (1024 * 1024)).toFixed(0);
-            showError(inputElement.id + 'Error', `Ukuran file maksimal ${sizeMB}MB`);
+            showError(inputElement.id + 'Error', 'Ukuran file maksimal ' + sizeMB + 'MB');
             inputElement.value = '';
             label.classList.remove('has-file');
             label.querySelector('.file-icon').textContent = '📁';
@@ -687,7 +705,8 @@
                       // Duplicate found
                       nimInput.classList.add('error');
                       showAlert('warningAlert', 
-                        '⚠️ ' + dupResult.message + '<br>' +
+                        '<strong>⚠️ NIM Sudah Terdaftar</strong><br>' +
+                        dupResult.message + '<br>' +
                         '<small>NIM ini sudah pernah mengumpulkan laporan PKL sebelumnya.</small>'
                       );
                       statusElement.textContent = '⚠️ NIM sudah terdaftar';
@@ -793,10 +812,20 @@
         submitBtn.disabled = true;
         submitBtn.classList.add('loading');
         progressBar.classList.add('active');
+        namaInput.disabled = true;
+        nimInput.disabled = true;
+        konsentrasiSelect.disabled = true;
+        coverFileInput.disabled = true;
+        completeFileInput.disabled = true;
       } else {
         submitBtn.disabled = false;
         submitBtn.classList.remove('loading');
         progressBar.classList.remove('active');
+        namaInput.disabled = false;
+        nimInput.disabled = false;
+        konsentrasiSelect.disabled = false;
+        coverFileInput.disabled = false;
+        completeFileInput.disabled = false;
       }
     }
     
@@ -809,6 +838,7 @@
       // Reset all alerts and errors
       hideAllAlerts();
       document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.input-field').forEach(el => el.classList.remove('error'));
       
       let isValid = true;
       
@@ -822,8 +852,6 @@
         showError('namaError', 'Nama lengkap minimal 3 karakter');
         namaInput.classList.add('error');
         isValid = false;
-      } else {
-        namaInput.classList.remove('error');
       }
       
       // Validate NIM
@@ -848,8 +876,6 @@
         showError('konsentrasiError', 'Pilih konsentrasi');
         konsentrasiSelect.classList.add('error');
         isValid = false;
-      } else {
-        konsentrasiSelect.classList.remove('error');
       }
       
       // Validate Cover File
@@ -878,7 +904,14 @@
         isValid = false;
       }
       
-      if (!isValid) return;
+      if (!isValid) {
+        // Scroll to first error
+        const firstError = document.querySelector('.error-message[style*="block"]');
+        if (firstError) {
+          firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
       
       // Final duplicate check before upload
       setLoading(true);
@@ -887,7 +920,11 @@
         .withSuccessHandler(function(dupCheck) {
           if (dupCheck.isDuplicate) {
             setLoading(false);
-            showAlert('warningAlert', '❌ ' + dupCheck.message);
+            showAlert('warningAlert', 
+              '<strong>❌ Gagal Submit</strong><br>' + 
+              dupCheck.message + '<br>' +
+              '<small>NIM ini sudah pernah mengumpulkan laporan PKL.</small>'
+            );
             return;
           }
           
@@ -896,7 +933,10 @@
         })
         .withFailureHandler(function(error) {
           setLoading(false);
-          showAlert('errorAlert', '❌ Gagal memeriksa duplikasi: ' + error.message);
+          showAlert('errorAlert', 
+            '<strong>❌ Kesalahan Sistem</strong><br>' + 
+            'Gagal memeriksa data: ' + error.message
+          );
         })
         .checkDuplicateNIM(nim);
     });
@@ -928,31 +968,48 @@
               setLoading(false);
               
               if (response.success) {
-                showAlert('successAlert', 
-                  '✅ <strong>' + response.message + '</strong><br><br>' +
-                  '📂 <a href="' + response.folderLink + '" target="_blank" style="color: #1a73e8;">Buka Folder Google Drive</a><br>' +
-                  '📄 <a href="' + response.coverFileLink + '" target="_blank" style="color: #1a73e8;">Lihat File Cover</a><br>' +
-                  '📄 <a href="' + response.completeFileLink + '" target="_blank" style="color: #1a73e8;">Lihat File Lengkap</a><br>' +
-                  '<small>📧 Email konfirmasi telah dikirim ke email Anda</small>'
-                );
+                const successHTML = 
+                  '<strong>✅ ' + response.message + '</strong>' +
+                  '<div class="success-links">' +
+                  '<a href="' + response.folderLink + '" target="_blank">📂 Buka Folder Google Drive</a>' +
+                  '<a href="' + response.coverFileLink + '" target="_blank">📄 Lihat File Cover</a>' +
+                  '<a href="' + response.completeFileLink + '" target="_blank">📄 Lihat File Lengkap</a>' +
+                  '</div>' +
+                  '<small style="display:block; margin-top:10px;">📧 Email konfirmasi telah dikirim ke email Anda</small>' +
+                  '<small>📅 Semester: ' + response.semester + '</small>';
+                
+                showAlert('successAlert', successHTML);
                 
                 // Reset form
                 resetForm();
+                
+                // Show info alert again
+                document.getElementById('infoAlert').style.display = 'block';
                 
                 // Scroll to top
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 
               } else {
                 if (response.isDuplicate) {
-                  showAlert('warningAlert', '❌ ' + response.message);
+                  showAlert('warningAlert', 
+                    '<strong>❌ Gagal Submit</strong><br>' + 
+                    response.message
+                  );
                 } else {
-                  showAlert('errorAlert', '❌ Gagal upload: ' + response.message);
+                  showAlert('errorAlert', 
+                    '<strong>❌ Gagal Upload</strong><br>' + 
+                    response.message
+                  );
                 }
               }
             })
             .withFailureHandler(function(error) {
               setLoading(false);
-              showAlert('errorAlert', '❌ Terjadi kesalahan sistem: ' + error.message);
+              showAlert('errorAlert', 
+                '<strong>❌ Kesalahan Sistem</strong><br>' + 
+                'Terjadi kesalahan: ' + error.message + '<br>' +
+                '<small>Silakan coba lagi atau hubungi administrator.</small>'
+              );
             })
             .uploadFiles(formData);
         }
@@ -969,7 +1026,10 @@
       };
       reader1.onerror = function() {
         setLoading(false);
-        showAlert('errorAlert', '❌ Gagal membaca file cover');
+        showAlert('errorAlert', 
+          '<strong>❌ Kesalahan</strong><br>' + 
+          'Gagal membaca file cover. Silakan coba lagi.'
+        );
       };
       
       // Read complete file
@@ -983,7 +1043,10 @@
       };
       reader2.onerror = function() {
         setLoading(false);
-        showAlert('errorAlert', '❌ Gagal membaca file lengkap');
+        showAlert('errorAlert', 
+          '<strong>❌ Kesalahan</strong><br>' + 
+          'Gagal membaca file lengkap. Silakan coba lagi.'
+        );
       };
       
       // Start reading files
@@ -994,20 +1057,13 @@
     // ============================================
     // INITIALIZATION
     // ============================================
-    // Show info alert on load
-    showAlert('infoAlert', 
-      '<strong>ℹ️ Informasi Penting:</strong><br>' +
-      '• Format NIM: 2022XXYYY (XX = 2 digit unik, YYY = 3 digit urut)<br>' +
-      '• Setiap NIM hanya dapat mengumpulkan <strong>1 kali</strong><br>' +
-      '• File harus dalam format <strong>PDF</strong>'
-    );
-    
-    // Focus on first input
-    namaInput.focus();
-    
     console.log('Form Pengumpulan Laporan PKL (S1) - Initialized');
-    console.log('Spreadsheet ID:', SPREADSHEET_ID);
-    console.log('Folder Master ID:', FOLDER_MASTER_ID);
+    console.log('Deployment URL: https://script.google.com/macros/s/AKfycbzQR7L5aEftRG0FJ8xrv2m0zV3tlBIFEqysiPtH8uUIDM3FWu9AdurYyTYf2ML-I8Q0yA/exec');
+    
+    // Focus on first input after page load
+    setTimeout(() => {
+      namaInput.focus();
+    }, 500);
   </script>
 </body>
 </html>
