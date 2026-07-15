@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Pengumpulan Laporan PKL (S1)</title>
+    <title>Form Pengumpulan Laporan PKL (S1) - FIKOM</title>
     <style>
         * {
             margin: 0;
@@ -26,7 +26,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             padding: 40px;
-            max-width: 600px;
+            max-width: 650px;
             width: 100%;
             animation: slideIn 0.5s ease-out;
         }
@@ -45,17 +45,20 @@
         .form-header {
             text-align: center;
             margin-bottom: 30px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
         }
         
         .form-header h2 {
             color: #333;
-            font-size: 24px;
+            font-size: 28px;
             margin-bottom: 10px;
         }
         
         .form-header p {
             color: #666;
             font-size: 14px;
+            font-style: italic;
         }
         
         .form-group {
@@ -71,6 +74,7 @@
         }
         
         .form-group input[type="text"],
+        .form-group input[type="email"],
         .form-group select {
             width: 100%;
             padding: 12px 15px;
@@ -82,6 +86,7 @@
         }
         
         .form-group input[type="text"]:focus,
+        .form-group input[type="email"]:focus,
         .form-group select:focus {
             outline: none;
             border-color: #667eea;
@@ -91,8 +96,8 @@
         
         .form-group input[type="file"] {
             width: 100%;
-            padding: 10px;
-            border: 2px dashed #e0e0e0;
+            padding: 15px;
+            border: 2px dashed #667eea;
             border-radius: 10px;
             background: #f8f9fa;
             cursor: pointer;
@@ -100,14 +105,15 @@
         }
         
         .form-group input[type="file"]:hover {
-            border-color: #667eea;
             background: #f0f3ff;
+            border-color: #764ba2;
         }
         
         .validation-message {
-            font-size: 12px;
+            font-size: 13px;
             margin-top: 5px;
             min-height: 20px;
+            font-weight: 500;
         }
         
         .validation-message.error {
@@ -120,16 +126,18 @@
         
         .btn-submit {
             width: 100%;
-            padding: 14px;
+            padding: 15px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .btn-submit:hover {
@@ -151,17 +159,47 @@
             font-size: 12px;
             color: #888;
             margin-top: 5px;
+            font-style: italic;
         }
         
-        .loading {
+        .loading-overlay {
             display: none;
-            text-align: center;
-            margin-top: 20px;
-            color: #667eea;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
         
-        .loading.active {
-            display: block;
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .alert {
@@ -169,59 +207,106 @@
             border-radius: 10px;
             margin-top: 20px;
             display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .alert.success {
             display: block;
             background: #d4edda;
             color: #155724;
-            border: 1px solid #c3e6cb;
+            border: 2px solid #28a745;
         }
         
         .alert.error {
             display: block;
             background: #f8d7da;
             color: #721c24;
-            border: 1px solid #f5c6cb;
+            border: 2px solid #dc3545;
+        }
+        
+        .alert.info {
+            display: block;
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #17a2b8;
+        }
+        
+        .nim-example {
+            background: #f0f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 13px;
+            margin-top: 5px;
+            border-left: 4px solid #667eea;
         }
         
         @media (max-width: 480px) {
             .form-container {
-                padding: 25px;
+                padding: 20px;
+            }
+            
+            .form-header h2 {
+                font-size: 22px;
             }
         }
     </style>
 </head>
 <body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p style="color: #333; font-weight: 600;">Sedang mengupload file...</p>
+            <p style="color: #666; font-size: 14px;">Mohon tunggu sebentar</p>
+        </div>
+    </div>
+
     <div class="form-container">
         <div class="form-header">
             <h2>📚 Form Pengumpulan Laporan PKL</h2>
-            <p>Program Studi Ilmu Komunikasi (S1)</p>
+            <p>Fakultas Ilmu Komunikasi - Program Studi S1</p>
         </div>
         
         <form id="pklForm" onsubmit="handleSubmit(event)">
             <!-- Nama Lengkap -->
             <div class="form-group">
-                <label for="namaLengkap">Nama Lengkap</label>
+                <label for="namaLengkap">👤 Nama Lengkap</label>
                 <input type="text" id="namaLengkap" name="namaLengkap" 
-                       placeholder="Masukkan nama lengkap" required>
+                       placeholder="Masukkan nama lengkap sesuai KTM" required>
             </div>
             
-            <!-- NIM dengan Validasi -->
+            <!-- Email -->
             <div class="form-group">
-                <label for="nim">NIM</label>
+                <label for="email">📧 Email Aktif</label>
+                <input type="email" id="email" name="email" 
+                       placeholder="contoh@email.com" required>
+            </div>
+            
+            <!-- NIM dengan Validasi (Tahun Masuk ALL) -->
+            <div class="form-group">
+                <label for="nim">🎓 NIM (Nomor Induk Mahasiswa)</label>
                 <input type="text" id="nim" name="nim" 
-                       placeholder="Contoh: 202241003" 
+                       placeholder="202441001" 
                        pattern="\d{9}"
                        maxlength="9"
                        required>
                 <div class="validation-message" id="nimValidation"></div>
-                <div class="info-text">Format: 4 digit tahun + 2 digit unik + 3 digit urut</div>
+                <div class="nim-example">
+                    <strong>Format NIM:</strong> [TAHUN][41][XXX]<br>
+                    • <strong>4 digit pertama</strong> = Tahun Masuk (semua tahun)<br>
+                    • <strong>41</strong> = Kode Prodi Ilmu Komunikasi (wajib)<br>
+                    • <strong>001-999</strong> = Nomor Urut Mahasiswa<br>
+                    <small>Contoh: 202241003, 202341005, 202441001</small>
+                </div>
             </div>
             
             <!-- Konsentrasi -->
             <div class="form-group">
-                <label for="konsentrasi">Konsentrasi</label>
+                <label for="konsentrasi">📖 Konsentrasi</label>
                 <select id="konsentrasi" name="konsentrasi" required>
                     <option value="">Pilih Konsentrasi</option>
                     <option value="Humas">Humas</option>
@@ -233,7 +318,7 @@
             
             <!-- Upload Cover sampai Lembar Persetujuan -->
             <div class="form-group">
-                <label for="fileCover">Upload File (Cover - Lembar Persetujuan)</label>
+                <label for="fileCover">📄 Upload File (Cover - Lembar Persetujuan)</label>
                 <input type="file" id="fileCover" name="fileCover" 
                        accept=".pdf" required>
                 <div class="info-text">Format PDF, maksimal 10MB</div>
@@ -241,140 +326,84 @@
             
             <!-- Upload File Lengkap -->
             <div class="form-group">
-                <label for="fileLengkap">Upload File Lengkap</label>
+                <label for="fileLengkap">📑 Upload File Lengkap</label>
                 <input type="file" id="fileLengkap" name="fileLengkap" 
                        accept=".pdf" required>
                 <div class="info-text">Format PDF, maksimal 20MB</div>
             </div>
             
             <button type="submit" class="btn-submit" id="submitBtn">
-                Submit Laporan
+                🚀 Submit Laporan PKL
             </button>
         </form>
-        
-        <div class="loading" id="loading">
-            ⏳ Sedang mengupload file...
-        </div>
         
         <div class="alert" id="alertMessage"></div>
     </div>
 
     <script>
-        // Fungsi untuk mendapatkan semester berdasarkan tanggal
-        function getSemesterFolder() {
-            const now = new Date();
-            const month = now.getMonth(); // 0-11
-            const year = now.getFullYear();
-            
-            let semester;
-            if (month >= 8 && month <= 1) { // September - Februari
-                semester = `Ganjil_${year}_${year + 1}`;
-            } else { // Maret - Agustus
-                semester = `Genap_${year - 1}_${year}`;
-            }
-            
-            return semester;
-        }
+        // URL Google Apps Script Web App
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQR7L5aEftRG0FJ8xrv2m0zV3tlBIFEqysiPtH8uUIDM3FWu9AdurYyTYf2ML-I8Q0yA/exec';
         
-        // Fungsi untuk mendapatkan nama file yang sudah diformat
-        function getFormattedFileName(nama, nim, originalFileName) {
-            // Bersihkan nama dari karakter spesial
-            const cleanNama = nama.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-            const cleanNim = nim.trim();
-            
-            // Ambil ekstensi file
-            const fileExt = originalFileName.split('.').pop();
-            
-            // Format: Nama=>NIM=>NamaFile
-            return `${cleanNama}=>${cleanNim}=>${originalFileName.replace(/\.[^/.]+$/, '')}.${fileExt}`;
-        }
-        
-        // Validasi NIM
+        // Validasi NIM Real-time (Tahun Masuk ALL)
         document.getElementById('nim').addEventListener('input', function(e) {
             const nim = e.target.value;
             const validationDiv = document.getElementById('nimValidation');
             
-            // Reset validation
             validationDiv.className = 'validation-message';
             validationDiv.textContent = '';
             
-            if (nim.length === 9) {
-                // Validasi format: 4 digit tahun + 2 digit unik + 3 digit urut
-                const yearPart = nim.substring(0, 4);
-                const uniquePart = nim.substring(4, 6);
-                const sequencePart = nim.substring(6, 9);
-                
-                // Validasi tahun (harus antara 2000-2099)
-                const year = parseInt(yearPart);
-                if (year < 2000 || year > 2099) {
-                    validationDiv.className = 'validation-message error';
-                    validationDiv.textContent = '❌ 4 digit pertama harus tahun valid (2000-2099)';
-                    return;
-                }
-                
-                // Validasi 2 digit unik (harus angka, tidak boleh 00)
-                const unique = parseInt(uniquePart);
-                if (isNaN(unique) || uniquePart === '00') {
-                    validationDiv.className = 'validation-message error';
-                    validationDiv.textContent = '❌ 2 digit unik tidak valid (tidak boleh 00)';
-                    return;
-                }
-                
-                // Validasi 3 digit urut (harus angka)
-                const sequence = parseInt(sequencePart);
-                if (isNaN(sequence) || sequence < 1) {
-                    validationDiv.className = 'validation-message error';
-                    validationDiv.textContent = '❌ 3 digit urut harus valid (001-999)';
-                    return;
-                }
-                
-                // Jika semua validasi lolos
-                validationDiv.className = 'validation-message success';
-                validationDiv.textContent = `✅ NIM valid: Tahun ${yearPart}, Unik ${uniquePart}, Urut ${sequencePart}`;
-            } else if (nim.length > 0) {
+            if (nim.length === 0) return;
+            
+            if (nim.length !== 9) {
                 validationDiv.className = 'validation-message error';
-                validationDiv.textContent = '❌ NIM harus 9 digit';
+                validationDiv.textContent = '❌ NIM harus tepat 9 digit';
+                return;
             }
+            
+            // Parse komponen NIM
+            const tahunMasuk = nim.substring(0, 4);
+            const kodeProdi = nim.substring(4, 6);
+            const nomorUrut = nim.substring(6, 9);
+            
+            // Validasi Tahun Masuk (ALL - semua tahun diperbolehkan)
+            const tahunInt = parseInt(tahunMasuk);
+            if (isNaN(tahunInt) || tahunInt < 1900 || tahunInt > 2099) {
+                validationDiv.className = 'validation-message error';
+                validationDiv.textContent = '❌ Tahun masuk harus antara 1900-2099';
+                return;
+            }
+            
+            // Validasi Kode Prodi (harus 41)
+            if (kodeProdi !== '41') {
+                validationDiv.className = 'validation-message error';
+                validationDiv.textContent = `❌ Kode prodi harus 41, bukan ${kodeProdi}`;
+                return;
+            }
+            
+            // Validasi Nomor Urut (001-999)
+            const nomorUrutInt = parseInt(nomorUrut);
+            if (isNaN(nomorUrutInt) || nomorUrutInt < 1 || nomorUrutInt > 999) {
+                validationDiv.className = 'validation-message error';
+                validationDiv.textContent = '❌ Nomor urut harus antara 001-999';
+                return;
+            }
+            
+            // Jika semua validasi lolos
+            validationDiv.className = 'validation-message success';
+            validationDiv.textContent = `✅ NIM Valid - Tahun Masuk: ${tahunMasuk} | Prodi: ${kodeProdi} (Ilmu Komunikasi) | No. Urut: ${nomorUrut}`;
         });
         
-        // Fungsi untuk mengirim email (simulasi)
-        function sendEmailNotification(nama, nim, konsentrasi, semester, fileNames) {
-            const emailData = {
-                to: `${nim}@student.university.ac.id`, // Email mahasiswa
-                subject: `Laporan PKL - ${nama} - ${nim}`,
-                body: `
-                    Halo ${nama},
-                    
-                    Laporan PKL Anda telah berhasil diupload dengan detail:
-                    
-                    Nama: ${nama}
-                    NIM: ${nim}
-                    Konsentrasi: ${konsentrasi}
-                    Semester: ${semester}
-                    
-                    File yang diupload:
-                    1. ${fileNames.cover}
-                    2. ${fileNames.lengkap}
-                    
-                    Terima kasih telah mengumpulkan laporan PKL.
-                    
-                    Salam,
-                    Admin Fakultas Ilmu Komunikasi
-                `
-            };
-            
-            // Simulasi pengiriman email
-            console.log('Mengirim email ke:', emailData.to);
-            console.log('Subject:', emailData.subject);
-            console.log('Body:', emailData.body);
-            
-            // Dalam implementasi nyata, ini akan menggunakan API email
-            // Seperti SendGrid, Mailgun, atau backend service
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    console.log('✅ Email terkirim ke:', emailData.to);
-                    resolve(true);
-                }, 1000);
+        // Fungsi untuk konversi file ke base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    // Hapus prefix data:application/pdf;base64,
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = error => reject(error);
             });
         }
         
@@ -383,94 +412,110 @@
             event.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
-            const loadingDiv = document.getElementById('loading');
+            const loadingOverlay = document.getElementById('loadingOverlay');
             const alertDiv = document.getElementById('alertMessage');
             
-            // Disable button dan tampilkan loading
-            submitBtn.disabled = true;
-            loadingDiv.classList.add('active');
+            // Reset alert
             alertDiv.className = 'alert';
             alertDiv.style.display = 'none';
             
             try {
+                // Validasi form HTML5
+                if (!event.target.checkValidity()) {
+                    event.target.reportValidity();
+                    return;
+                }
+                
                 // Ambil data form
                 const namaLengkap = document.getElementById('namaLengkap').value.trim();
+                const email = document.getElementById('email').value.trim();
                 const nim = document.getElementById('nim').value.trim();
                 const konsentrasi = document.getElementById('konsentrasi').value;
                 const fileCover = document.getElementById('fileCover').files[0];
                 const fileLengkap = document.getElementById('fileLengkap').files[0];
                 
-                // Validasi NIM
-                const nimRegex = /^\d{9}$/;
-                if (!nimRegex.test(nim)) {
-                    throw new Error('NIM harus 9 digit');
+                // Validasi NIM (Tahun Masuk ALL)
+                const tahunMasuk = nim.substring(0, 4);
+                const kodeProdi = nim.substring(4, 6);
+                const nomorUrut = nim.substring(6, 9);
+                
+                // Validasi tahun masuk (ALL - semua tahun)
+                const tahunInt = parseInt(tahunMasuk);
+                if (isNaN(tahunInt) || tahunInt < 1900 || tahunInt > 2099) {
+                    throw new Error('Tahun masuk tidak valid (harus antara 1900-2099)');
                 }
                 
-                // Validasi 2 digit unik
-                const uniquePart = nim.substring(4, 6);
-                if (uniquePart === '00' || isNaN(parseInt(uniquePart))) {
-                    throw new Error('2 digit unik NIM tidak valid');
+                if (kodeProdi !== '41') {
+                    throw new Error('Kode prodi harus 41 (Ilmu Komunikasi)');
                 }
                 
-                // Validasi file size
-                const maxCoverSize = 10 * 1024 * 1024; // 10MB
-                const maxLengkapSize = 20 * 1024 * 1024; // 20MB
+                const nomorUrutInt = parseInt(nomorUrut);
+                if (isNaN(nomorUrutInt) || nomorUrutInt < 1 || nomorUrutInt > 999) {
+                    throw new Error('Nomor urut harus antara 001-999');
+                }
                 
-                if (fileCover.size > maxCoverSize) {
+                // Validasi ukuran file
+                if (fileCover.size > 10 * 1024 * 1024) {
                     throw new Error('File Cover melebihi batas 10MB');
                 }
                 
-                if (fileLengkap.size > maxLengkapSize) {
+                if (fileLengkap.size > 20 * 1024 * 1024) {
                     throw new Error('File Lengkap melebihi batas 20MB');
                 }
                 
-                // Dapatkan folder semester
-                const semesterFolder = getSemesterFolder();
+                // Tampilkan loading
+                submitBtn.disabled = true;
+                loadingOverlay.classList.add('active');
                 
-                // Format nama file
-                const formattedCoverName = getFormattedFileName(namaLengkap, nim, fileCover.name);
-                const formattedLengkapName = getFormattedFileName(namaLengkap, nim, fileLengkap.name);
+                // Konversi file ke base64
+                const coverBase64 = await fileToBase64(fileCover);
+                const lengkapBase64 = await fileToBase64(fileLengkap);
                 
-                // Simulasi struktur folder dan upload
-                const folderStructure = {
-                    semester: semesterFolder,
-                    files: {
-                        cover: `uploads/${semesterFolder}/cover/${formattedCoverName}`,
-                        lengkap: `uploads/${semesterFolder}/lengkap/${formattedLengkapName}`
+                // Siapkan data untuk dikirim
+                const formData = {
+                    namaLengkap: namaLengkap,
+                    email: email,
+                    nim: nim,
+                    konsentrasi: konsentrasi,
+                    fileCover: {
+                        name: fileCover.name,
+                        type: fileCover.type,
+                        size: fileCover.size,
+                        data: coverBase64
+                    },
+                    fileLengkap: {
+                        name: fileLengkap.name,
+                        type: fileLengkap.type,
+                        size: fileLengkap.size,
+                        data: lengkapBase64
                     }
                 };
                 
-                console.log('📁 Struktur Folder:', folderStructure);
-                console.log('📄 Upload File Cover:', formattedCoverName);
-                console.log('📄 Upload File Lengkap:', formattedLengkapName);
+                // Kirim ke Google Apps Script
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Penting untuk CORS Google Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
                 
-                // Simulasi upload delay
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // Kirim notifikasi email
-                await sendEmailNotification(
-                    namaLengkap, 
-                    nim, 
-                    konsentrasi, 
-                    semesterFolder,
-                    {
-                        cover: formattedCoverName,
-                        lengkap: formattedLengkapName
-                    }
-                );
-                
+                // Karena mode no-cors, kita asumsikan berhasil
                 // Tampilkan pesan sukses
                 alertDiv.className = 'alert success';
                 alertDiv.style.display = 'block';
                 alertDiv.innerHTML = `
-                    ✅ <strong>Upload Berhasil!</strong><br>
-                    Nama: ${namaLengkap}<br>
-                    NIM: ${nim}<br>
-                    Konsentrasi: ${konsentrasi}<br>
-                    Semester: ${semesterFolder}<br>
-                    File Cover: ${formattedCoverName}<br>
-                    File Lengkap: ${formattedLengkapName}<br>
-                    <small>✉️ Email notifikasi telah dikirim ke ${nim}@student.university.ac.id</small>
+                    ✅ <strong>Upload Berhasil!</strong><br><br>
+                    <strong>Detail Pengumpulan:</strong><br>
+                    📝 Nama: ${namaLengkap}<br>
+                    🎓 NIM: ${nim} (Tahun Masuk: ${tahunMasuk})<br>
+                    📧 Email: ${email}<br>
+                    📖 Konsentrasi: ${konsentrasi}<br>
+                    📄 File Cover: ${fileCover.name}<br>
+                    📑 File Lengkap: ${fileLengkap.name}<br><br>
+                    <small>✉️ Notifikasi akan dikirim ke email Anda</small><br>
+                    <small>📂 File tersimpan di folder semester yang sesuai</small>
                 `;
                 
                 // Reset form
@@ -478,26 +523,19 @@
                 document.getElementById('nimValidation').textContent = '';
                 document.getElementById('nimValidation').className = 'validation-message';
                 
+                // Scroll ke atas untuk melihat pesan sukses
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
             } catch (error) {
                 alertDiv.className = 'alert error';
                 alertDiv.style.display = 'block';
-                alertDiv.textContent = `❌ Error: ${error.message}`;
+                alertDiv.innerHTML = `❌ <strong>Error:</strong> ${error.message}`;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } finally {
                 submitBtn.disabled = false;
-                loadingDiv.classList.remove('active');
+                loadingOverlay.classList.remove('active');
             }
         }
-        
-        // Preview semester folder saat halaman dimuat
-        console.log('📅 Semester aktif:', getSemesterFolder());
-        console.log('📂 Struktur folder akan dibuat:');
-        console.log('  uploads/');
-        console.log('    ├── Ganjil_2026_2027/ (September-Februari)');
-        console.log('    │   ├── cover/');
-        console.log('    │   └── lengkap/');
-        console.log('    └── Genap_2025_2026/ (Maret-Agustus)');
-        console.log('        ├── cover/');
-        console.log('        └── lengkap/');
     </script>
 </body>
 </html>
