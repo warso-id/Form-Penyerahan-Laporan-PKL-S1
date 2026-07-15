@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Pengumpulan Laporan PKL (S1)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    .form-body {
+      padding: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 25px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .required::after {
+      content: " *";
+      color: #e74c3c;
+    }
+    
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      background-color: #fafafa;
+    }
+    
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+      background-color: white;
+    }
+    
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+    
+    .file-input {
+      position: absolute;
+      left: -9999px;
+    }
+    
+    .file-label {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      background: #f5f5f5;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: #666;
+      font-weight: normal;
+    }
+    
+    .file-label:hover {
+      border-color: #1a73e8;
+      background: #f0f7ff;
+      color: #1a73e8;
+    }
+    
+    .file-label i {
+      margin-right: 10px;
+      font-size: 20px;
+    }
+    
+    .file-name {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #666;
+      font-style: italic;
+    }
+    
+    .file-hint {
+      font-size: 11px;
+      color: #999;
+      margin-top: 5px;
+      display: block;
+    }
+    
+    .btn-submit {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(26, 115, 232, 0.3);
+    }
+    
+    .btn-submit:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .error-message {
+      color: #e74c3c;
+      font-size: 12px;
+      margin-top: 5px;
+      display: none;
+    }
+    
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1a73e8;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .nim-info {
+      background: #f0f7ff;
+      border-left: 4px solid #1a73e8;
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📄 Pengumpulan Laporan PKL</h1>
+      <p>Program Studi Ilmu Komunikasi (S1)</p>
+    </div>
+    
+    <div class="form-body">
+      <div class="nim-info">
+        <strong>ℹ️ Format NIM:</strong> 2022XXYYY (XX = 2 digit unik, YYY = 3 digit urut)<br>
+        Contoh: 202241003 (41 adalah kode unik yang valid)
+      </div>
+      
+      <div class="success-message" id="successMessage"></div>
+      
+      <form id="pklForm">
+        <div class="form-group">
+          <label class="required">Nama Lengkap</label>
+          <input type="text" id="namaLengkap" name="namaLengkap" placeholder="Masukkan nama lengkap" required>
+          <div class="error-message" id="namaError"></div>
+        </div>
+        
+        <div class="form-group">
+          <label class="required">NIM</label>
+          <input type="text" id="nim" name="nim" placeholder="Contoh: 202241003" required maxlength="9" pattern="\d{9}">
+          <div class="error-message" id="nimError"></div>
+        </div>
+        
+        <div class="form-group">
+          <label class="required">Konsentrasi</label>
+          <select id="konsentrasi" name="konsentrasi" required>
+            <option value="">-- Pilih Konsentrasi --</option>
+            <option value="Humas">Humas</option>
+            <option value="Periklanan">Periklanan</option>
+            <option value="Jurnalistik">Jurnalistik</option>
+            <option value="Penyiaran Digital">Penyiaran Digital</option>
+          </select>
+          <div class="error-message" id="konsentrasiError"></div>
+        </div>
+        
+        <div class="form-group">
+          <label class="required">File Cover - Lembar Persetujuan (PDF)</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="coverFile" class="file-input" accept=".pdf" required>
+            <label for="coverFile" class="file-label" id="coverLabel">
+              <span>📁</span> Pilih file cover & lembar persetujuan...
+            </label>
+          </div>
+          <span class="file-name" id="coverFileName"></span>
+          <span class="file-hint">Format: PDF, Maks: 10MB</span>
+          <div class="error-message" id="coverError"></div>
+        </div>
+        
+        <div class="form-group">
+          <label class="required">File Lengkap (PDF)</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="completeFile" class="file-input" accept=".pdf" required>
+            <label for="completeFile" class="file-label" id="completeLabel">
+              <span>📁</span> Pilih file lengkap...
+            </label>
+          </div>
+          <span class="file-name" id="completeFileName"></span>
+          <span class="file-hint">Format: PDF, Maks: 25MB</span>
+          <div class="error-message" id="completeError"></div>
+        </div>
+        
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>Sedang mengupload file...</p>
+        </div>
+        
+        <button type="submit" class="btn-submit" id="submitBtn">
+          Submit Laporan PKL
+        </button>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+    document.getElementById('coverFile').addEventListener('change', function(e) {
+      var fileName = e.target.files[0] ? e.target.files[0].name : '';
+      document.getElementById('coverFileName').textContent = fileName ? '✓ ' + fileName : '';
+      document.getElementById('coverLabel').querySelector('span').textContent = fileName ? '✅' : '📁';
+    });
+    
+    document.getElementById('completeFile').addEventListener('change', function(e) {
+      var fileName = e.target.files[0] ? e.target.files[0].name : '';
+      document.getElementById('completeFileName').textContent = fileName ? '✓ ' + fileName : '';
+      document.getElementById('completeLabel').querySelector('span').textContent = fileName ? '✅' : '📁';
+    });
+    
+    document.getElementById('nim').addEventListener('input', function(e) {
+      this.value = this.value.replace(/[^0-9]/g, '');
+      if (this.value.length > 9) {
+        this.value = this.value.slice(0, 9);
+      }
+    });
+    
+    document.getElementById('pklForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Reset error messages
+      document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+      document.getElementById('successMessage').style.display = 'none';
+      
+      var isValid = true;
+      var namaLengkap = document.getElementById('namaLengkap').value.trim();
+      var nim = document.getElementById('nim').value.trim();
+      var konsentrasi = document.getElementById('konsentrasi').value;
+      var coverFile = document.getElementById('coverFile').files[0];
+      var completeFile = document.getElementById('completeFile').files[0];
+      
+      // Validate nama
+      if (!namaLengkap) {
+        document.getElementById('namaError').textContent = 'Nama lengkap harus diisi';
+        document.getElementById('namaError').style.display = 'block';
+        isValid = false;
+      }
+      
+      // Validate NIM format
+      if (!nim) {
+        document.getElementById('nimError').textContent = 'NIM harus diisi';
+        document.getElementById('nimError').style.display = 'block';
+        isValid = false;
+      } else if (!/^\d{9}$/.test(nim)) {
+        document.getElementById('nimError').textContent = 'NIM harus 9 digit angka';
+        document.getElementById('nimError').style.display = 'block';
+        isValid = false;
+      }
+      
+      // Validate konsentrasi
+      if (!konsentrasi) {
+        document.getElementById('konsentrasiError').textContent = 'Pilih konsentrasi';
+        document.getElementById('konsentrasiError').style.display = 'block';
+        isValid = false;
+      }
+      
+      // Validate files
+      if (!coverFile) {
+        document.getElementById('coverError').textContent = 'File cover harus diupload';
+        document.getElementById('coverError').style.display = 'block';
+        isValid = false;
+      } else if (coverFile.type !== 'application/pdf') {
+        document.getElementById('coverError').textContent = 'File harus dalam format PDF';
+        document.getElementById('coverError').style.display = 'block';
+        isValid = false;
+      } else if (coverFile.size > 10 * 1024 * 1024) {
+        document.getElementById('coverError').textContent = 'Ukuran file maksimal 10MB';
+        document.getElementById('coverError').style.display = 'block';
+        isValid = false;
+      }
+      
+      if (!completeFile) {
+        document.getElementById('completeError').textContent = 'File lengkap harus diupload';
+        document.getElementById('completeError').style.display = 'block';
+        isValid = false;
+      } else if (completeFile.type !== 'application/pdf') {
+        document.getElementById('completeError').textContent = 'File harus dalam format PDF';
+        document.getElementById('completeError').style.display = 'block';
+        isValid = false;
+      } else if (completeFile.size > 25 * 1024 * 1024) {
+        document.getElementById('completeError').textContent = 'Ukuran file maksimal 25MB';
+        document.getElementById('completeError').style.display = 'block';
+        isValid = false;
+      }
+      
+      if (!isValid) return;
+      
+      // Show loading
+      document.getElementById('submitBtn').disabled = true;
+      document.getElementById('loading').style.display = 'block';
+      
+      // Read files as base64
+      var reader1 = new FileReader();
+      var reader2 = new FileReader();
+      
+      reader1.onload = function(e) {
+        var coverData = {
+          data: e.target.result.split(',')[1],
+          mimeType: coverFile.type
+        };
+        
+        reader2.onload = function(e) {
+          var completeData = {
+            data: e.target.result.split(',')[1],
+            mimeType: completeFile.type
+          };
+          
+          var formData = {
+            namaLengkap: namaLengkap,
+            nim: nim,
+            konsentrasi: konsentrasi,
+            coverFile: coverData,
+            completeFile: completeData
+          };
+          
+          google.script.run
+            .withSuccessHandler(function(response) {
+              document.getElementById('loading').style.display = 'none';
+              document.getElementById('submitBtn').disabled = false;
+              
+              if (response.success) {
+                document.getElementById('successMessage').textContent = response.message;
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('pklForm').reset();
+                document.getElementById('coverFileName').textContent = '';
+                document.getElementById('completeFileName').textContent = '';
+                document.getElementById('coverLabel').querySelector('span').textContent = '📁';
+                document.getElementById('completeLabel').querySelector('span').textContent = '📁';
+              } else {
+                alert(response.message);
+              }
+            })
+            .withFailureHandler(function(error) {
+              document.getElementById('loading').style.display = 'none';
+              document.getElementById('submitBtn').disabled = false;
+              alert('Terjadi kesalahan: ' + error.message);
+            })
+            .uploadFiles(formData);
+        };
+        
+        reader2.readAsDataURL(completeFile);
+      };
+      
+      reader1.readAsDataURL(coverFile);
+    });
+  </script>
+</body>
+</html>
